@@ -19,6 +19,10 @@ mono_crash.*
 App.config
 Properties
 compiler2021.csproj
+Gplex.exe
+Gppg.exe
+QUT.ShiftReduceParser.dll
+kompilator.lst
 
 # Build results
 [Dd]ebug/
