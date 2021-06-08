@@ -23,6 +23,8 @@ Gplex.exe
 Gppg.exe
 QUT.ShiftReduceParser.dll
 kompilator.lst
+llvm_tools
+stuff
 
 # Build results
 [Dd]ebug/

@@ -1,16 +1,18 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace compiler2021
+public class Compiler
 {
-    class Compiler2021
+
+    public static int errors = 0;
+
+    public static List<SyntaxTree> code = new List<SyntaxTree>();
+
+    public static List<string> source;
+
+    public static int Main(string[] args)
     {
-        static void Main(string[] args)
-        {
-            Console.WriteLine("lol");
-        }
+        return 0;
     }
 }
