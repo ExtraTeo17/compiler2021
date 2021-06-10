@@ -4,7 +4,6 @@ using System.Collections.Generic;
 
 public class Compiler
 {
-
     public static int errors = 0;
 
     public static List<SyntaxTree> code = new List<SyntaxTree>();
