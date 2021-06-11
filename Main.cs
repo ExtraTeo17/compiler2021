@@ -6,7 +6,7 @@ public class Compiler
 {
     public static int errors = 0;
 
-    public static List<SyntaxTree> code = new List<SyntaxTree>();
+    public static SyntaxTree tree = new SyntaxTree();
 
     public static List<string> source;
 
@@ -14,4 +14,9 @@ public class Compiler
     {
         return 0;
     }
+}
+
+public class SyntaxTree
+{
+
 }

@@ -1,6 +1,3 @@
-
-// Uwaga: W wywo³aniu generatora gppg nale¿y u¿yæ opcji /gplex
-
 %namespace GardensPoint
 
 %{
@@ -15,14 +12,20 @@ public SyntaxTree tree;
 	public char type;
 }
 
-%token Print 
+%token Program OpenBracket CloseBracket Write Eof
+%token <val> IntNumber
+
+%type <type> program
 
 %%
 
-start		: start line { ++lineno; }
-			| line { ++lineno; }
+program				: Program OpenBracket program_content CloseBracket Eof { }
 
-line		: Print exp Endl
-				{
-					tree = new Print($2);
-				}
+program_content		: declarations instructions { }
+
+instructions		: instructions instruction
+					| instruction { }
+
+instruction			: write_instruction { }
+
+write_instruction	: Write IntNumber Semicolon { }

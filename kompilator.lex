@@ -1,12 +1,16 @@
 %using QUT.Gppg;
 %namespace GardensPoint
 
-
+IntNumber   [0-9]+
 
 %%
 
-"print"       { return (int)Tokens.Print; }
-{IntNumber}   { yylval.val=yytext; return (int)Tokens.IntNumber; }
-"exit"        { return (int)Tokens.Exit; }
-"\r"          { return (int)Tokens.Endl; }
-<<EOF>>       { return (int)Tokens.Eof; }
+"program"		{ return (int)Tokens.Print; }
+"{"				{ return (int)Tokens.OpenBracket; }
+"}"				{ return (int)Tokens.CloseBracket; }
+"write"			{ return (int)Tokens.Write; }
+{IntNumber}		{ yylval.val=yytext; return (int)Tokens.IntNumber; }
+" "				{ }
+"\r"			{ }
+"\t"			{ }
+<<EOF>>			{ return (int)Tokens.Eof; }
