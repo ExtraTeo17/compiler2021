@@ -103,8 +103,8 @@ public abstract class SyntaxTree
 
 class Program : SyntaxTree
 {
-    private List<SyntaxTree> declarations = new List<SyntaxTree>();
-    private List<SyntaxTree> instructions = null;
+    private List<SyntaxTree> declarations;
+    private List<SyntaxTree> instructions;
 
     public Program(List<SyntaxTree> declList, List<SyntaxTree> instrList)
     {

@@ -22,9 +22,9 @@ public SyntaxTree tree;
 
 %%
 
-program				: Program OpenBracket declarations instructions Eof
+program				: Program OpenBracket declarations instructions CloseBracket Eof
 					{
-						Compiler.syntaxTree = new Program($3, $4);
+						Compiler.syntaxTree = new Program(new List<SyntaxTree>(), $4);
 					}
 					;
 

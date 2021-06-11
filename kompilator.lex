@@ -13,4 +13,5 @@ IntNumber   [0-9]+
 " "				{ }
 "\r"			{ }
 "\t"			{ }
+";"				{ return (int)Tokens.Semicolon; }
 <<EOF>>			{ return (int)Tokens.Eof; }
