@@ -2,6 +2,8 @@
 using System.IO;
 using System.Collections.Generic;
 using GardensPoint;
+using System.Text;
+using System.Text.RegularExpressions;
 
 public class Compiler
 {
@@ -13,11 +15,15 @@ public class Compiler
 
     private static StreamWriter writer;
 
+    private static List<StringInfo> stringInfos = new List<StringInfo>();
+
+    private static int stringVarNameId = 1;
+
     public static int Main(string[] args)
     {
         string file;
         FileStream source;
-        Console.WriteLine("\nCompiler for MINI language");
+        Console.WriteLine("\nA Compiler for MINI language");
 
         if (args.Length >= 1)
         {
@@ -68,6 +74,11 @@ public class Compiler
     {
         EmitCode("@int_print = constant [3 x i8] c\"%d\\00\"");
         EmitCode("@double_res = constant [16 x i8] c\"  Result:  %lf\\0A\\00\"");
+        EmitCode("@hex_int_print = constant [5 x i8] c\"0X%X\\00\"");
+        foreach (StringInfo info in stringInfos)
+        {
+            EmitCode($"@{info.stringVarName} = constant [{info.stringLength + 1} x i8] c\"{info.stringValue}\\00\"");
+        }
         EmitCode("declare i32 @printf(i8*, ...)");
         EmitCode();
         EmitCode("define void @main()");
@@ -79,6 +90,41 @@ public class Compiler
     public static void EmitCode(string instr = null)
     {
         writer.WriteLine(instr);
+    }
+
+    public static StringInfo AddString(string stringValue)
+    {
+        stringValue = stringValue.Substring(1, stringValue.Length - 2);
+        stringValue = Regex.Unescape(stringValue);
+        int stringLength = stringValue.Length;
+        StringBuilder stringBuilder = new StringBuilder();
+        foreach (char charValue in stringValue)
+        {
+            stringBuilder.Append("\\" + ((int)charValue).ToString("X2"));
+        }
+        stringValue = stringBuilder.ToString();
+        StringInfo info = new StringInfo(GetNextStringVarName(), stringLength, stringValue);
+        stringInfos.Add(info);
+        return info;
+    }
+
+    internal static string GetNextStringVarName()
+    {
+        return "string" + stringVarNameId++;
+    }
+}
+
+public class StringInfo
+{
+    public string stringVarName;
+    public int stringLength;
+    public string stringValue;
+
+    public StringInfo(string varName, int strLen, string strVal)
+    {
+        stringVarName = varName;
+        stringLength = strLen;
+        stringValue = strVal;
     }
 }
 
@@ -121,11 +167,11 @@ class Program : SyntaxTree
     }
 }
 
-class WriteInstruction : SyntaxTree
+class DecimalWriteInstruction : SyntaxTree
 {
     private int value;
 
-    public WriteInstruction(int val)
+    public DecimalWriteInstruction(int val)
     {
         value = val;
     }
@@ -138,6 +184,48 @@ class WriteInstruction : SyntaxTree
     public override string GenCode()
     {
         Compiler.EmitCode($"call i32 (i8*, ...) @printf(i8* bitcast ([3 x i8]* @int_print to i8*), i32 {value.ToString()})");
+        return null;
+    }
+}
+
+class HexWriteInstruction : SyntaxTree
+{
+    private int value;
+
+    public HexWriteInstruction(int val)
+    {
+        value = val;
+    }
+
+    public override char CheckType()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override string GenCode()
+    {
+        Compiler.EmitCode($"call i32 (i8*, ...) @printf(i8* bitcast ([5 x i8]* @hex_int_print to i8*), i32 {value.ToString()})");
+        return null;
+    }
+}
+
+class StringWriteInstruction : SyntaxTree
+{
+    private StringInfo stringInfo;
+
+    public StringWriteInstruction(StringInfo info)
+    {
+        stringInfo = info;
+    }
+
+    public override char CheckType()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override string GenCode()
+    {
+        Compiler.EmitCode($"call i32 (i8*, ...) @printf(i8* bitcast ([{stringInfo.stringLength + 1} x i8]* @{stringInfo.stringVarName} to i8*))");
         return null;
     }
 }

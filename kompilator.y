@@ -14,8 +14,8 @@ public SyntaxTree tree;
 	public List<SyntaxTree> syntaxTreeList;
 }
 
-%token Program OpenBracket CloseBracket Write Semicolon Eof
-%token <val> IntNumber
+%token Program OpenBracket CloseBracket Write Semicolon Eof Comma Hex
+%token <val> IntNumber StringVar
 
 %type <syntaxTree> instruction write_instruction
 %type <syntaxTreeList> declarations instructions
@@ -47,7 +47,16 @@ instruction			: write_instruction { }
 
 write_instruction	: Write IntNumber Semicolon
 					{
-						$$ = new WriteInstruction(int.Parse($2));
+						$$ = new DecimalWriteInstruction(int.Parse($2));
+					}
+					| Write IntNumber Comma Hex Semicolon
+					{
+						$$ = new HexWriteInstruction(int.Parse($2));
+					}
+					| Write StringVar Semicolon
+					{
+						StringInfo info = Compiler.AddString($2);
+						$$ = new StringWriteInstruction(info);
 					}
 					;
 
