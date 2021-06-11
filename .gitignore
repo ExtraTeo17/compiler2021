@@ -25,6 +25,8 @@ QUT.ShiftReduceParser.dll
 kompilator.lst
 llvm_tools
 stuff
+kompilator.cs
+parser.cs
 
 # Build results
 [Dd]ebug/

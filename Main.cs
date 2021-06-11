@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
+using GardensPoint;
 
 public class Compiler
 {
@@ -133,6 +134,11 @@ class Program : SyntaxTree
 class WriteInstruction : SyntaxTree
 {
     private int value;
+
+    public WriteInstruction(int val)
+    {
+        value = val;
+    }
 
     public override char CheckType()
     {

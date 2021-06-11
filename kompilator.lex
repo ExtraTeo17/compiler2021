@@ -5,7 +5,7 @@ IntNumber   [0-9]+
 
 %%
 
-"program"		{ return (int)Tokens.Print; }
+"program"		{ return (int)Tokens.Program; }
 "{"				{ return (int)Tokens.OpenBracket; }
 "}"				{ return (int)Tokens.CloseBracket; }
 "write"			{ return (int)Tokens.Write; }
