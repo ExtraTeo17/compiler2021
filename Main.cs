@@ -66,24 +66,13 @@ public class Compiler
 
     private static void GenCode()
     {
-        EmitCode("; prolog");
-        EmitCode("@int_res = constant [15 x i8] c\"  Result:  %d\\0A\\00\"");
+        EmitCode("@int_print = constant [3 x i8] c\"%d\\00\"");
         EmitCode("@double_res = constant [16 x i8] c\"  Result:  %lf\\0A\\00\"");
-        EmitCode("@end = constant [20 x i8] c\"\\0AEnd of execution\\0A\\0A\\00\"");
         EmitCode("declare i32 @printf(i8*, ...)");
+        EmitCode();
         EmitCode("define void @main()");
         EmitCode("{");
-        for (char c = 'a'; c <= 'z'; ++c)
-        {
-            EmitCode($"%i{c} = alloca i32");
-            EmitCode($"store i32 0, i32* %i{c}");
-            EmitCode($"%r{c} = alloca double");
-            EmitCode($"store double 0.0, double* %r{c}");
-        }
-        EmitCode();
-
         syntaxTree.GenCode();
-
         EmitCode("}");
     }
 
@@ -127,6 +116,7 @@ class Program : SyntaxTree
         {
             instr.GenCode();
         }
+        Compiler.EmitCode("ret void");
         return null;
     }
 }
@@ -147,7 +137,7 @@ class WriteInstruction : SyntaxTree
 
     public override string GenCode()
     {
-        Compiler.EmitCode($"call i32 (i8*, ...) @printf(i8* bitcast ([15 x i8]* @int_res to i8*), i32 {value.ToString()})");
+        Compiler.EmitCode($"call i32 (i8*, ...) @printf(i8* bitcast ([3 x i8]* @int_print to i8*), i32 {value.ToString()})");
         return null;
     }
 }
