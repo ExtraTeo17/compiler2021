@@ -18,13 +18,23 @@ public SyntaxTree tree;
 %%
 
 program				: Program OpenBracket declarations instructions Eof
-						{
-							Compiler.syntaxTree = new Program($3, $4);
-						}
+					{
+						Compiler.syntaxTree = new Program($3, $4);
+					}
 
 instructions		: instructions instruction
-					| instruction { }
+					{
+						$1.Add($2);
+					}
+					| instruction
+					{
+						$$ = new List<SyntaxTree>();
+						$$.Add($1);
+					}
 
 instruction			: write_instruction { }
 
-write_instruction	: Write IntNumber Semicolon { }
+write_instruction	: Write IntNumber Semicolon
+					{
+						$$ = new WriteInstruction(int.Parse($2));
+					}

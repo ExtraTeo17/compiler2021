@@ -102,8 +102,8 @@ public abstract class SyntaxTree
 
 class Program : SyntaxTree
 {
-    private List<SyntaxTree> declarations;
-    private List<SyntaxTree> instructions;
+    private List<SyntaxTree> declarations = new List<SyntaxTree>();
+    private List<SyntaxTree> instructions = null;
 
     public Program(List<SyntaxTree> declList, List<SyntaxTree> instrList)
     {
@@ -141,6 +141,7 @@ class WriteInstruction : SyntaxTree
 
     public override string GenCode()
     {
-        throw new NotImplementedException();
+        Compiler.EmitCode($"call i32 (i8*, ...) @printf(i8* bitcast ([15 x i8]* @int_res to i8*), i32 {value.ToString()})");
+        return null;
     }
 }
