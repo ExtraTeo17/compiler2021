@@ -15,13 +15,12 @@ public SyntaxTree tree;
 %token Program OpenBracket CloseBracket Write Eof
 %token <val> IntNumber
 
-%type <type> program
-
 %%
 
-program				: Program OpenBracket program_content CloseBracket Eof { }
-
-program_content		: declarations instructions { }
+program				: Program OpenBracket declarations instructions Eof
+						{
+							Compiler.syntaxTree = new Program($3, $4);
+						}
 
 instructions		: instructions instruction
 					| instruction { }
