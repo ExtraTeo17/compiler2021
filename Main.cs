@@ -89,6 +89,9 @@ public class Compiler
         EmitCode();
         EmitCode("define i32 @main()");
         EmitCode("{");
+
+        Console.WriteLine(syntaxTree);
+
         syntaxTree.GenCode();
         EmitCode("}");
     }
@@ -253,6 +256,17 @@ class Program : SyntaxTree
         }
         Compiler.EmitCode("ret i32 0");
         return null;
+    }
+
+    public override string ToString()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.Append("INSTRUCTIONS:\n");
+        foreach (SyntaxTree tree in instructions)
+        {
+            sb.Append(tree + "\n");
+        }
+        return sb.ToString();
     }
 }
 
