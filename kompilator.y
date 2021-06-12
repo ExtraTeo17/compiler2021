@@ -1,11 +1,5 @@
 %namespace GardensPoint
 
-%{
-
-public SyntaxTree tree;
-
-%}
-
 %union
 {
 	public string val;
@@ -15,9 +9,9 @@ public SyntaxTree tree;
 }
 
 %token Program OpenBracket CloseBracket Write Semicolon Eof Comma Hex
-%token <val> IntNumber StringVar RealNumber Boolean
+%token <val> IntNumber StringVar RealNumber Boolean TypeName Ident
 
-%type <syntaxTree> instruction write_instruction
+%type <syntaxTree> instruction write_instruction declaration
 %type <syntaxTreeList> declarations instructions
 
 %%
@@ -28,17 +22,39 @@ program				: Program OpenBracket declarations instructions CloseBracket Eof
 					}
 					;
 
-declarations		: { }
+declarations		: declarations declaration
+					{
+
+					}
+					|
+					{
+					
+					}
+					;
+
+declaration			: TypeName identifiers Semicolon
+					{
+						
+					}
+					;
+					
+identifiers			: identifiers Comma Ident
+					{
+					
+					}
+					| Ident
+					{
+					
+					}
 					;
 
 instructions		: instructions instruction
 					{
 						$1.Add($2);
 					}
-					| instruction
+					|
 					{
 						$$ = new List<SyntaxTree>();
-						$$.Add($1);
 					}
 					;
 

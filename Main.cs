@@ -82,7 +82,7 @@ public class Compiler
         }
         EmitCode("declare i32 @printf(i8*, ...)");
         EmitCode();
-        EmitCode("define void @main()");
+        EmitCode("define i32 @main()");
         EmitCode("{");
         syntaxTree.GenCode();
         EmitCode("}");
@@ -187,7 +187,7 @@ class Program : SyntaxTree
         {
             instr.GenCode();
         }
-        Compiler.EmitCode("ret void");
+        Compiler.EmitCode("ret i32 0");
         return null;
     }
 }
