@@ -6,45 +6,63 @@
 	public char type;
 	public SyntaxTree syntaxTree;
 	public List<SyntaxTree> syntaxTreeList;
+	public Dictionary<string, SymbolInfo> symbolDict;
+	public List<Declaration> declList;
+	public List<string> idents;
 }
 
 %token Program OpenBracket CloseBracket Write Semicolon Eof Comma Hex
 %token <val> IntNumber StringVar RealNumber Boolean TypeName Ident
 
-%type <syntaxTree> instruction write_instruction declaration
-%type <syntaxTreeList> declarations instructions
+%type <syntaxTree> instruction write_instruction
+%type <syntaxTreeList> instructions
+%type <symbolDict> declarations
+%type <declList> declaration
+%type <idents> identifiers
 
 %%
 
 program				: Program OpenBracket declarations instructions CloseBracket Eof
 					{
-						Compiler.syntaxTree = new Program(new List<SyntaxTree>(), $4);
+						Compiler.syntaxTree = new Program($4);
+						Compiler.symbolArray = new SymbolArray($3);
 					}
 					;
 
 declarations		: declarations declaration
 					{
-
+						foreach (Declaration decl in $2)
+						{
+							$1.Add(decl.identifier, decl.symbolInfo);
+						}
 					}
 					|
 					{
-					
+						$$ = new Dictionary<string, SymbolInfo>();
 					}
 					;
 
 declaration			: TypeName identifiers Semicolon
 					{
-						
+						List<Declaration> declarations = new List<Declaration>();
+						foreach (string ident in $2)
+						{
+							SymbolInfo info = new SymbolInfo($1);
+							Declaration declaration = new Declaration(ident, info);
+							declarations.Add(declaration);
+						}
+						$$ = declarations;
 					}
 					;
 					
 identifiers			: identifiers Comma Ident
 					{
-					
+						$$.Add($3);
 					}
 					| Ident
 					{
-					
+						$$ = new List<string>();
+						$$.Add($1);
 					}
 					;
 

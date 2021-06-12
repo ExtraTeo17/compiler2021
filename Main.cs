@@ -10,6 +10,8 @@ public class Compiler
 
     public static SyntaxTree syntaxTree;
 
+    public static SymbolArray symbolArray;
+
     public static List<string> source;
 
     private static StreamWriter writer;
@@ -61,6 +63,9 @@ public class Compiler
         else
         {
             writer = new StreamWriter(file + ".ll");
+
+            Console.WriteLine("SYMBOL ARRAY:\n" + symbolArray);
+
             GenCode();
             writer.Close();
             Console.WriteLine(" compilation successful\n");
@@ -153,6 +158,71 @@ public class StringInfo
     }
 }
 
+public class SymbolArray
+{
+    private Dictionary<string, SymbolInfo> symbols;
+
+    public SymbolArray(Dictionary<string, SymbolInfo> dict)
+    {
+        symbols = dict;
+    }
+
+    public override string ToString()
+    {
+        StringBuilder sb = new StringBuilder();
+        foreach (KeyValuePair<string, SymbolInfo> entry in symbols)
+        {
+            sb.Append("[");
+            sb.Append("Key: " + entry.Key);
+            sb.Append(", Value: " + entry.Value);
+            sb.Append("]\n");
+        }
+        return sb.ToString();
+    }
+}
+
+public class Declaration
+{
+    public string identifier;
+    public SymbolInfo symbolInfo;
+
+    public Declaration(string ident, SymbolInfo info)
+    {
+        identifier = ident;
+        symbolInfo = info;
+    }
+}
+
+public class SymbolInfo
+{
+    private char typename;
+
+    public SymbolInfo(string type)
+    {
+        if (type == "int")
+        {
+            typename = 'i';
+        }
+        else if (type == "double")
+        {
+            typename = 'd';
+        }
+        else if (type == "bool")
+        {
+            typename = 'b';
+        }
+        else
+        {
+            throw new Exception($"Declaration of type: {type} not allowed"); // TODO: make sure it can be left if not needed
+        }
+    }
+
+    public override string ToString()
+    {
+        return $"[typename: '{typename}']";
+    }
+}
+
 public abstract class SyntaxTree
 {
     public char type;
@@ -163,12 +233,10 @@ public abstract class SyntaxTree
 
 class Program : SyntaxTree
 {
-    private List<SyntaxTree> declarations;
     private List<SyntaxTree> instructions;
 
-    public Program(List<SyntaxTree> declList, List<SyntaxTree> instrList)
+    public Program(List<SyntaxTree> instrList)
     {
-        declarations = declList;
         instructions = instrList;
     }
 
@@ -179,10 +247,6 @@ class Program : SyntaxTree
 
     public override string GenCode()
     {
-        foreach (var decl in declarations)
-        {
-            decl.GenCode();
-        }
         foreach (var instr in instructions)
         {
             instr.GenCode();
