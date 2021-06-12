@@ -77,7 +77,12 @@ instructions		: instructions instruction
 					;
 
 instruction			: write_instruction { }
+					| exp_instruction { }
 					;
+
+exp_instruction		: exp Semicolon { }
+
+exp					: 
 
 write_instruction	: Write IntNumber Semicolon
 					{
