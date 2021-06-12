@@ -15,7 +15,7 @@
 %token <val> IntNumber StringVar RealNumber Boolean Ident Int Double Bool
 
 %type <val> typename
-%type <syntaxTree> instruction write_instruction
+%type <syntaxTree> instruction write_instruction exp_instruction unary bitwise factor term relation logical assigner exp
 %type <syntaxTreeList> instructions
 %type <symbolDict> declarations
 %type <declList> declaration
@@ -89,48 +89,111 @@ instruction			: write_instruction { }
 exp_instruction		: exp Semicolon { }
 					;
 
-exp					: Ident Assign assigner { }
+exp					: Ident Assign assigner
+					{
+						$$ = new AssignOperation($1, $3);
+					}
 					| assigner { }
 					;
 
-assigner			: logical LogicalSum logical { }
-					| logical LogicalProduct logical { }
+assigner			: logical LogicalSum logical
+					{
+						$$ = new LogicalSumOperation($1, $3);
+					}
+					| logical LogicalProduct logical
+					{
+						$$ = new LogicalProductOperation($1, $3);
+					}
 					| logical { }
 					;
 
-logical				: relation Equals relation { }
-					| relation NotEquals relation { }
-					| relation GreaterThan relation { }
-					| relation GreaterOrEqual relation { }
-					| relation LessThan relation { }
-					| relation LessOrEqual relation { }
+logical				: relation Equals relation
+					{
+						$$ = new EqualsOperation($1, $3);
+					}
+					| relation NotEquals relation
+					{
+						$$ = new NotEqualsOperation($1, $3);
+					}
+					| relation GreaterThan relation
+					{
+						$$ = new GreaterThanOperation($1, $3);
+					}
+					| relation GreaterOrEqual relation
+					{
+						$$ = new GreaterOrEqualOperation($1, $3);
+					}
+					| relation LessThan relation
+					{
+						$$ = new LessThanOperation($1, $3);
+					}
+					| relation LessOrEqual relation
+					{
+						$$ = new LessOrEqualOperation($1, $3);
+					}
 					| relation { }
 					;
 
-relation			: term Plus term { }
-					| term Minus term { }
+relation			: term Plus term
+					{
+						$$ = new AdditionOperation($1, $3);
+					}
+					| term Minus term
+					{
+						$$ = new SubstractionOperation($1, $3);
+					}
 					| term { }
 					;
 
-term				: factor Multiplies factor { }
-					| factor Divides factor { }
+term				: factor Multiplies factor
+					{
+						$$ = new MultiplicationOperation($1, $3);
+					}
+					| factor Divides factor
+					{
+						$$ = new DivisionOperation($1, $3);
+					}
 					| factor { }
 					;
 
-factor				: bitwise BitwiseSum bitwise { }
-					| bitwise BitwiseProduct bitwise { }
+factor				: bitwise BitwiseSum bitwise
+					{
+						$$ = new BitwiseSumOperation($1, $3);
+					}
+					| bitwise BitwiseProduct bitwise
+					{
+						$$ = new BitwiseProductOperation($1, $3);
+					}
 					| bitwise { }
 					;
 
-bitwise				: Minus unary { }
-					| BitwiseNegate unary { }
-					| LogicalNegate unary { }
-					| OpenPar Int ClosePar unary { }
-					| OpenPar Double ClosePar unary { }
-					| unary
+bitwise				: Minus unary
+					{
+						$$ = new UnaryMinusOperation($2);
+					}
+					| BitwiseNegate unary
+					{
+						$$ = new BitwiseNegateOperation($2);
+					}
+					| LogicalNegate unary
+					{
+						$$ = new LogicalNegateOperation($2);
+					}
+					| OpenPar Int ClosePar unary
+					{
+						$$ = new ConvertToIntOperation($4);
+					}
+					| OpenPar Double ClosePar unary
+					{
+						$$ = new ConvertToDoubleOperation($4);
+					}
+					| unary { }
 					;
 
-unary				: OpenPar exp ClosePar { }
+unary				: OpenPar exp ClosePar
+					{
+						$$ = $2;
+					}
 					| IntNumber { }
 					| RealNumber { }
 					| Boolean { }
