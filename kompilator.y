@@ -12,8 +12,9 @@
 }
 
 %token Program OpenBracket CloseBracket Write Semicolon Eof Comma Hex
-%token <val> IntNumber StringVar RealNumber Boolean TypeName Ident
+%token <val> IntNumber StringVar RealNumber Boolean Ident Int Double Bool
 
+%type <val> typename
 %type <syntaxTree> instruction write_instruction
 %type <syntaxTreeList> instructions
 %type <symbolDict> declarations
@@ -42,7 +43,7 @@ declarations		: declarations declaration
 					}
 					;
 
-declaration			: TypeName identifiers Semicolon
+declaration			: typename identifiers Semicolon
 					{
 						List<Declaration> declarations = new List<Declaration>();
 						foreach (string ident in $2)
@@ -55,6 +56,11 @@ declaration			: TypeName identifiers Semicolon
 					}
 					;
 					
+typename			: Int { }
+					| Double { }
+					| Bool { }
+					;
+
 identifiers			: identifiers Comma Ident
 					{
 						$$.Add($3);
@@ -82,7 +88,52 @@ instruction			: write_instruction { }
 
 exp_instruction		: exp Semicolon { }
 
-exp					: 
+exp					: Ident Assign assigner { }
+					| assigner { }
+					;
+
+assigner			: logical LogicalSum logical { }
+					| logical LogicalProduct logical { }
+					| logical { }
+					;
+
+logical				: relation Equals relation { }
+					| relation NotEquals relation { }
+					| relation GreaterThan relation { }
+					| relation GreaterOrEqual relation { }
+					| relation LessThan relation { }
+					| relation LessOrEqual relation { }
+					| relation { }
+					;
+
+relation			: term Plus term { }
+					| term Minus term { }
+					| term { }
+					;
+
+term				: factor Multiplies factor { }
+					| factor Divides factor { }
+					| factor { }
+					;
+
+factor				: bitwise BitwiseSum bitwise { }
+					| bitwise BitwiseProduct bitwise { }
+					| bitwise { }
+					;
+
+bitwise				: Minus unary { }
+					| BitwiseNegate unary { }
+					| LogicalNegate unary { }
+					| OpenPar Int ClosePar unary { }
+					| OpenPar Double ClosePar unary { }
+					| unary
+
+unary				: OpenPar exp ClosePar { }
+					| IntNumber { }
+					| RealNumber { }
+					| Boolean { }
+					| Ident { }
+					;
 
 write_instruction	: Write IntNumber Semicolon
 					{
