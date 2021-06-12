@@ -3,7 +3,6 @@ using System.IO;
 using System.Collections.Generic;
 using GardensPoint;
 using System.Text;
-using System.Text.RegularExpressions;
 
 public class Compiler
 {
@@ -73,8 +72,10 @@ public class Compiler
     private static void GenCode()
     {
         EmitCode("@int_print = constant [3 x i8] c\"%d\\00\"");
-        EmitCode("@double_res = constant [16 x i8] c\"  Result:  %lf\\0A\\00\"");
         EmitCode("@hex_int_print = constant [5 x i8] c\"0X%X\\00\"");
+        EmitCode("@double_print = constant [4 x i8] c\"%lf\\00\"");
+        EmitCode("@bool_print_true = constant [5 x i8] c\"True\\00\"");
+        EmitCode("@bool_print_false = constant [6 x i8] c\"False\\00\"");
         foreach (StringInfo info in stringInfos)
         {
             EmitCode($"@{info.stringVarName} = constant [{info.stringLength + 1} x i8] c\"{info.stringValue}\\00\"");
@@ -191,11 +192,11 @@ class Program : SyntaxTree
     }
 }
 
-class DecimalWriteInstruction : SyntaxTree
+class IntWriteInstruction : SyntaxTree
 {
     private int value;
 
-    public DecimalWriteInstruction(int val)
+    public IntWriteInstruction(int val)
     {
         value = val;
     }
@@ -212,11 +213,11 @@ class DecimalWriteInstruction : SyntaxTree
     }
 }
 
-class HexWriteInstruction : SyntaxTree
+class IntHexWriteInstruction : SyntaxTree
 {
     private int value;
 
-    public HexWriteInstruction(int val)
+    public IntHexWriteInstruction(int val)
     {
         value = val;
     }
@@ -229,6 +230,51 @@ class HexWriteInstruction : SyntaxTree
     public override string GenCode()
     {
         Compiler.EmitCode($"call i32 (i8*, ...) @printf(i8* bitcast ([5 x i8]* @hex_int_print to i8*), i32 {value.ToString()})");
+        return null;
+    }
+}
+
+class DoubleWriteInstruction : SyntaxTree
+{
+    private double value;
+
+    public DoubleWriteInstruction(double val)
+    {
+        value = val;
+    }
+
+    public override char CheckType()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override string GenCode()
+    {
+        Compiler.EmitCode($"call i32 (i8*, ...) @printf(i8* bitcast ([4 x i8]* @double_print to i8*), double {value.ToString()})");
+        return null;
+    }
+}
+
+class BooleanWriteInstruction : SyntaxTree
+{
+    private bool value;
+
+    public BooleanWriteInstruction(bool val)
+    {
+        value = val;
+    }
+
+    public override char CheckType()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override string GenCode()
+    {
+        if (value)
+            Compiler.EmitCode("call i32 (i8*, ...) @printf(i8* bitcast ([5 x i8]* @bool_print_true to i8*))");
+        else
+            Compiler.EmitCode("call i32 (i8*, ...) @printf(i8* bitcast ([6 x i8]* @bool_print_false to i8*))");
         return null;
     }
 }
