@@ -11,7 +11,7 @@
 	public List<string> idents;
 }
 
-%token Program OpenBracket CloseBracket Write Semicolon Eof Comma Hex
+%token Program OpenBracket CloseBracket Write Semicolon Eof Comma Hex Assign LogicalSum LogicalProduct Equals NotEquals GreaterThan GreaterOrEqual LessThan LessOrEqual Plus Minus Multiplies Divides BitwiseSum BitwiseProduct BitwiseNegate LogicalNegate OpenPar ClosePar
 %token <val> IntNumber StringVar RealNumber Boolean Ident Int Double Bool
 
 %type <val> typename
@@ -87,6 +87,7 @@ instruction			: write_instruction { }
 					;
 
 exp_instruction		: exp Semicolon { }
+					;
 
 exp					: Ident Assign assigner { }
 					| assigner { }
@@ -127,6 +128,7 @@ bitwise				: Minus unary { }
 					| OpenPar Int ClosePar unary { }
 					| OpenPar Double ClosePar unary { }
 					| unary
+					;
 
 unary				: OpenPar exp ClosePar { }
 					| IntNumber { }
