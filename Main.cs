@@ -95,7 +95,7 @@ public class Compiler
     public static StringInfo AddString(string stringValue)
     {
         stringValue = stringValue.Substring(1, stringValue.Length - 2);
-        stringValue = Regex.Unescape(stringValue);
+        stringValue = UnescapeNewlineQuotasAndBackslash(stringValue);
         int stringLength = stringValue.Length;
         StringBuilder stringBuilder = new StringBuilder();
         foreach (char charValue in stringValue)
@@ -106,6 +106,30 @@ public class Compiler
         StringInfo info = new StringInfo(GetNextStringVarName(), stringLength, stringValue);
         stringInfos.Add(info);
         return info;
+    }
+
+    private static string UnescapeNewlineQuotasAndBackslash(string value)
+    {
+        List<char> unescapedCharArray = new List<char>();
+        char[] charArray = value.ToCharArray();
+        for (int i = 0; i < charArray.Length; ++i)
+        {
+            if (charArray[i] == '\\') // TODO: handle the impossible case when backslash as last char
+            {
+                if (charArray[i + 1] == 'n')
+                {
+                    unescapedCharArray.Add('\n');
+                }
+                else
+                {
+                    unescapedCharArray.Add(charArray[i + 1]);
+                }
+                i++;
+                continue;
+            }
+            unescapedCharArray.Add(charArray[i]);
+        }
+        return new string(unescapedCharArray.ToArray());
     }
 
     internal static string GetNextStringVarName()
