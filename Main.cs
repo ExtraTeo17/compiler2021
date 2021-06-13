@@ -19,6 +19,7 @@ public class Compiler
 
     private static int stringVarNameId = 1;
     private static int registerNameId = 1;
+    private static int labelNameId = 1;
 
     public static int Main(string[] args)
     {
@@ -88,6 +89,7 @@ public class Compiler
         EmitCode();
         EmitCode("define i32 @main()");
         EmitCode("{");
+        EmitCode($"{GetCurrentLabelName()}:");
 
         Console.WriteLine(syntaxTree);
 
@@ -148,6 +150,16 @@ public class Compiler
     public static string GetNextRegisterName()
     {
         return "%register" + registerNameId++;
+    }
+
+    public static string GetNextLabelName()
+    {
+        return "label" + ++labelNameId;
+    }
+
+    public static string GetCurrentLabelName()
+    {
+        return "label" + labelNameId;
     }
 }
 
@@ -298,6 +310,7 @@ class Identifier : SyntaxTree
     public override string CheckType()
     {
         typename = Compiler.symbolTable[name].typename;
+        Console.WriteLine("TYPENAME: " + typename + " IS FOR NAME: " + name);
         return typename;
     }
 
@@ -564,12 +577,30 @@ class LogicalSumOperation : BinaryOperation
 
     public override string CheckType()
     {
-        throw new NotImplementedException();
+        firstExpression.CheckType();
+        secondExpression.CheckType();
+        typename = "i1";
+        return typename;
     }
 
     public override string GenCode()
     {
-        throw new NotImplementedException();
+        string value1 = firstExpression.GenCode();
+        string value2 = secondExpression.GenCode();
+        string curLabel = Compiler.GetCurrentLabelName();
+        string label1 = Compiler.GetNextLabelName();
+        string label2 = Compiler.GetNextLabelName();
+        string reg1 = Compiler.GetNextRegisterName();
+        Compiler.EmitCode($"{reg1} = icmp ne i1 {value1}, 0");
+        Compiler.EmitCode($"br i1 {reg1}, label %{label2}, label %{label1}");
+        Compiler.EmitCode($"{label1}:");
+        string reg2 = Compiler.GetNextRegisterName();
+        Compiler.EmitCode($"{reg2} = icmp ne i1 {value2}, 0");
+        Compiler.EmitCode($"br label %{label2}");
+        Compiler.EmitCode($"{label2}:");
+        string reg3 = Compiler.GetNextRegisterName();
+        Compiler.EmitCode($"{reg3} = phi i1 [ true, %{curLabel} ], [ {reg2}, %{label1} ]");
+        return reg3;
     }
 }
 
@@ -579,7 +610,10 @@ class LogicalProductOperation : BinaryOperation
 
     public override string CheckType()
     {
-        throw new NotImplementedException();
+        firstExpression.CheckType();
+        secondExpression.CheckType();
+        typename = "i1";
+        return typename;
     }
 
     public override string GenCode()
