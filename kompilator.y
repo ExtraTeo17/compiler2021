@@ -3,11 +3,8 @@
 %union
 {
 	public string val;
-	public char type;
 	public SyntaxTree syntaxTree;
 	public List<SyntaxTree> syntaxTreeList;
-	public Dictionary<string, SymbolInfo> symbolDict;
-	public List<Declaration> declList;
 	public List<string> idents;
 }
 
@@ -16,40 +13,33 @@
 
 %type <val> typename
 %type <syntaxTree> instruction write_instruction exp_instruction unary bitwise factor term relation logical assigner exp ident
-%type <syntaxTreeList> instructions
-%type <symbolDict> declarations
-%type <declList> declaration
+%type <syntaxTreeList> declarations declaration instructions
 %type <idents> identifiers
 
 %%
 
 program				: Program OpenBracket declarations instructions CloseBracket Eof
 					{
-						Compiler.syntaxTree = new Program($4);
-						Compiler.symbolArray = new SymbolArray($3);
+						Compiler.syntaxTree = new Program($3, $4);
 					}
 					;
 
 declarations		: declarations declaration
 					{
-						foreach (Declaration decl in $2)
-						{
-							$1.Add(decl.identifier, decl.symbolInfo);
-						}
+						$1.AddRange($2);
 					}
 					|
 					{
-						$$ = new Dictionary<string, SymbolInfo>();
+						$$ = new List<SyntaxTree>();
 					}
 					;
 
 declaration			: typename identifiers Semicolon
 					{
-						List<Declaration> declarations = new List<Declaration>();
+						List<SyntaxTree> declarations = new List<SyntaxTree>();
 						foreach (string ident in $2)
 						{
-							SymbolInfo info = new SymbolInfo($1);
-							Declaration declaration = new Declaration(ident, info);
+							Declaration declaration = new Declaration(ident, $1);
 							declarations.Add(declaration);
 						}
 						$$ = declarations;

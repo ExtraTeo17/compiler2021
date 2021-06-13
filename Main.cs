@@ -9,8 +9,7 @@ public class Compiler
     public static int errors = 0;
 
     public static SyntaxTree syntaxTree;
-
-    public static SymbolArray symbolArray;
+    public static Dictionary<string, SyntaxTree> symbolTable;
 
     public static List<string> source;
 
@@ -19,6 +18,7 @@ public class Compiler
     private static List<StringInfo> stringInfos = new List<StringInfo>();
 
     private static int stringVarNameId = 1;
+    private static int registerNameId = 1;
 
     public static int Main(string[] args)
     {
@@ -56,6 +56,8 @@ public class Compiler
         parser.Parse();
         source.Close();
 
+        syntaxTree.CheckType();
+
         if (errors > 0)
         {
             Console.WriteLine($"\n {errors} errors detected\n");
@@ -63,9 +65,6 @@ public class Compiler
         else
         {
             writer = new StreamWriter(file + ".ll");
-
-            Console.WriteLine("SYMBOL ARRAY:\n" + symbolArray);
-
             GenCode();
             writer.Close();
             Console.WriteLine(" compilation successful\n");
@@ -145,6 +144,11 @@ public class Compiler
     {
         return "string" + stringVarNameId++;
     }
+
+    public static string NextRegisterName()
+    {
+        return "register" + registerNameId++;
+    }
 }
 
 public class StringInfo
@@ -161,58 +165,25 @@ public class StringInfo
     }
 }
 
-public class SymbolArray
-{
-    private Dictionary<string, SymbolInfo> symbols;
-
-    public SymbolArray(Dictionary<string, SymbolInfo> dict)
-    {
-        symbols = dict;
-    }
-
-    public override string ToString()
-    {
-        StringBuilder sb = new StringBuilder();
-        foreach (KeyValuePair<string, SymbolInfo> entry in symbols)
-        {
-            sb.Append("[");
-            sb.Append("Key: " + entry.Key);
-            sb.Append(", Value: " + entry.Value);
-            sb.Append("]\n");
-        }
-        return sb.ToString();
-    }
-}
-
-public class Declaration
+public class Declaration : SyntaxTree
 {
     public string identifier;
-    public SymbolInfo symbolInfo;
 
-    public Declaration(string ident, SymbolInfo info)
+    public Declaration(string ident, string type)
     {
         identifier = ident;
-        symbolInfo = info;
-    }
-}
 
-public class SymbolInfo
-{
-    private char typename;
-
-    public SymbolInfo(string type)
-    {
         if (type == "int")
         {
-            typename = 'i';
+            typename = "i32";
         }
         else if (type == "double")
         {
-            typename = 'd';
+            typename = "double";
         }
         else if (type == "bool")
         {
-            typename = 'b';
+            typename = "i1";
         }
         else
         {
@@ -220,22 +191,33 @@ public class SymbolInfo
         }
     }
 
+    public override string CheckType()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override string GenCode()
+    {
+        Compiler.EmitCode($"%{identifier} = alloca {typename}");
+        return null;
+    }
+
     public override string ToString()
     {
-        return $"[typename: '{typename}']";
+        return base.ToString() + $", [identifier: {identifier}]";
     }
 }
 
 public abstract class SyntaxTree
 {
-    public char type;
+    public string typename;
     public int line = -1;
-    public abstract char CheckType();
+    public abstract string CheckType();
     public abstract string GenCode();
 
     public override string ToString()
     {
-        return $"SyntaxTree: [{base.ToString()}]";
+        return $"{base.ToString()} extends SyntaxTree: [typename: {typename}]";
     }
 }
 
@@ -243,18 +225,38 @@ class Program : SyntaxTree
 {
     private List<SyntaxTree> instructions;
 
-    public Program(List<SyntaxTree> instrList)
+    public Program(List<SyntaxTree> declList, List<SyntaxTree> instrList)
     {
         instructions = instrList;
+        Compiler.symbolTable = InitializeSymbolTable(declList);
     }
 
-    public override char CheckType()
+    private Dictionary<string, SyntaxTree> InitializeSymbolTable(List<SyntaxTree> declarations)
     {
-        throw new NotImplementedException();
+        Dictionary<string, SyntaxTree> table = new Dictionary<string, SyntaxTree>();
+        foreach (var elem in declarations)
+        {
+            Declaration decl = elem as Declaration;
+            table.Add(decl.identifier, decl);
+        }
+        return table;
+    }
+
+    public override string CheckType()
+    {
+        foreach (SyntaxTree instr in instructions)
+        {
+            instr.CheckType();
+        }
+        return null;
     }
 
     public override string GenCode()
     {
+        foreach (var decl in Compiler.symbolTable.Values)
+        {
+            decl.GenCode();
+        }
         foreach (var instr in instructions)
         {
             instr.GenCode();
@@ -266,6 +268,15 @@ class Program : SyntaxTree
     public override string ToString()
     {
         StringBuilder sb = new StringBuilder();
+        sb.Append("DECLARATIONS:\n");
+        foreach (KeyValuePair<string, SyntaxTree> entry in Compiler.symbolTable)
+        {
+            sb.Append("[");
+            sb.Append("Key: " + entry.Key);
+            sb.Append(", Value: " + entry.Value);
+            sb.Append("]\n");
+        }
+        sb.Append("\n");
         sb.Append("INSTRUCTIONS:\n");
         foreach (SyntaxTree tree in instructions)
         {
@@ -277,21 +288,29 @@ class Program : SyntaxTree
 
 class Identifier : SyntaxTree
 {
-    private string name;
+    public string name;
 
     public Identifier(string id)
     {
         name = id;
     }
 
-    public override char CheckType()
+    public override string CheckType()
     {
-        throw new NotImplementedException();
+        typename = Compiler.symbolTable[name].typename;
+        return typename;
     }
 
     public override string GenCode()
     {
-        throw new NotImplementedException();
+        string registerName = Compiler.NextRegisterName();
+        Compiler.EmitCode($"%{registerName} = load {typename}, {typename}* %{name}");
+        return "%" + registerName;
+    }
+
+    public override string ToString()
+    {
+        return base.ToString() + $", [name: {name}]";
     }
 }
 
@@ -304,14 +323,15 @@ class IntNumber : SyntaxTree
         value = val;
     }
 
-    public override char CheckType()
+    public override string CheckType()
     {
-        throw new NotImplementedException();
+        typename = "i32";
+        return typename;
     }
 
     public override string GenCode()
     {
-        throw new NotImplementedException();
+        return value.ToString();
     }
 }
 
@@ -324,14 +344,15 @@ class RealNumber : SyntaxTree
         value = val;
     }
 
-    public override char CheckType()
+    public override string CheckType()
     {
-        throw new NotImplementedException();
+        typename = "double";
+        return typename;
     }
 
     public override string GenCode()
     {
-        throw new NotImplementedException();
+        return string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0:0.0###############}", value); // TODO: make sure this invariant culture stuff is correct
     }
 }
 
@@ -344,9 +365,10 @@ class BoolValue : SyntaxTree
         value = val;
     }
 
-    public override char CheckType()
+    public override string CheckType()
     {
-        throw new NotImplementedException();
+        typename = "i1";
+        return typename;
     }
 
     public override string GenCode()
@@ -357,30 +379,45 @@ class BoolValue : SyntaxTree
 
 class WriteInstruction : SyntaxTree
 {
-    private SyntaxTree value;
+    private SyntaxTree expression;
 
-    public WriteInstruction(SyntaxTree val)
+    public WriteInstruction(SyntaxTree exp)
     {
-        value = val;
+        expression = exp;
     }
 
-    public override char CheckType()
+    public override string CheckType()
     {
-        throw new NotImplementedException();
+        expression.CheckType();
+        return null;
     }
 
     public override string GenCode()
     {
-        // int
-        Compiler.EmitCode($"call i32 (i8*, ...) @printf(i8* bitcast ([3 x i8]* @int_print to i8*), i32 {value.ToString()})");
-        // double
-        Compiler.EmitCode($"call i32 (i8*, ...) @printf(i8* bitcast ([4 x i8]* @double_print to i8*), double {value.ToString()})");
-        // bool
-        if (value)
-            Compiler.EmitCode("call i32 (i8*, ...) @printf(i8* bitcast ([5 x i8]* @bool_print_true to i8*))");
+        string value = expression.GenCode();
+
+        if (expression.typename == "i32")
+        {
+            Compiler.EmitCode($"call i32 (i8*, ...) @printf(i8* bitcast ([3 x i8]* @int_print to i8*), i32 {value})");
+        }
+        else if (expression.typename == "double")
+        {
+            Compiler.EmitCode($"call i32 (i8*, ...) @printf(i8* bitcast ([4 x i8]* @double_print to i8*), double {value})");
+        }
+        else if (expression.typename == "i1") // TODO: fix bool printing, probably a branch condition True/False
+        {
+            if (value == "true")
+                Compiler.EmitCode("call i32 (i8*, ...) @printf(i8* bitcast ([5 x i8]* @bool_print_true to i8*))");
+            else if (value == "false")
+                Compiler.EmitCode("call i32 (i8*, ...) @printf(i8* bitcast ([6 x i8]* @bool_print_false to i8*))");
+            else
+                throw new Exception($"Invalid boolean value: {value} provided");
+        }
         else
-            Compiler.EmitCode("call i32 (i8*, ...) @printf(i8* bitcast ([6 x i8]* @bool_print_false to i8*))");
-        // TODO: fix for different types
+        {
+            throw new Exception($"Invalid expression typename: {expression.typename} provided");
+        }
+
         return null;
     }
 }
@@ -399,7 +436,7 @@ class UnaryMinusOperation : UnaryOperation
 {
     public UnaryMinusOperation(SyntaxTree exp) : base(exp) { }
 
-    public override char CheckType()
+    public override string CheckType()
     {
         throw new NotImplementedException();
     }
@@ -414,7 +451,7 @@ class BitwiseNegateOperation : UnaryOperation
 {
     public BitwiseNegateOperation(SyntaxTree exp) : base(exp) { }
 
-    public override char CheckType()
+    public override string CheckType()
     {
         throw new NotImplementedException();
     }
@@ -429,7 +466,7 @@ class LogicalNegateOperation : UnaryOperation
 {
     public LogicalNegateOperation(SyntaxTree exp) : base(exp) { }
 
-    public override char CheckType()
+    public override string CheckType()
     {
         throw new NotImplementedException();
     }
@@ -444,7 +481,7 @@ class ConvertToIntOperation : UnaryOperation
 {
     public ConvertToIntOperation(SyntaxTree exp) : base(exp) { }
 
-    public override char CheckType()
+    public override string CheckType()
     {
         throw new NotImplementedException();
     }
@@ -459,7 +496,7 @@ class ConvertToDoubleOperation : UnaryOperation
 {
     public ConvertToDoubleOperation(SyntaxTree exp) : base(exp) { }
 
-    public override char CheckType()
+    public override string CheckType()
     {
         throw new NotImplementedException();
     }
@@ -491,14 +528,22 @@ class AssignOperation : BinaryOperation
 {
     public AssignOperation(SyntaxTree exp1, SyntaxTree exp2) : base(exp1, exp2) { }
 
-    public override char CheckType()
+    public override string CheckType() // TODO: make sure you can repeat this method everywhere like that
     {
-        throw new NotImplementedException();
+        firstExpression.CheckType();
+        secondExpression.CheckType(); // TODO: calculate typename for AssignOp
+        return null;
     }
 
     public override string GenCode()
     {
-        throw new NotImplementedException();
+        string secondExpValue = secondExpression.GenCode();
+        string secondExpTypename = secondExpression.typename;
+        Identifier ident = firstExpression as Identifier;
+        string firstExpValue = ident.name;
+        string firstExpTypename = firstExpression.typename;
+        Compiler.EmitCode($"store {secondExpTypename} {secondExpValue}, {firstExpTypename}* %{firstExpValue}");
+        return firstExpValue;
     }
 }
 
@@ -506,7 +551,7 @@ class LogicalSumOperation : BinaryOperation
 {
     public LogicalSumOperation(SyntaxTree exp1, SyntaxTree exp2) : base(exp1, exp2) { }
 
-    public override char CheckType()
+    public override string CheckType()
     {
         throw new NotImplementedException();
     }
@@ -521,7 +566,7 @@ class LogicalProductOperation : BinaryOperation
 {
     public LogicalProductOperation(SyntaxTree exp1, SyntaxTree exp2) : base(exp1, exp2) { }
 
-    public override char CheckType()
+    public override string CheckType()
     {
         throw new NotImplementedException();
     }
@@ -536,7 +581,7 @@ class EqualsOperation : BinaryOperation
 {
     public EqualsOperation(SyntaxTree exp1, SyntaxTree exp2) : base(exp1, exp2) { }
 
-    public override char CheckType()
+    public override string CheckType()
     {
         throw new NotImplementedException();
     }
@@ -551,7 +596,7 @@ class NotEqualsOperation : BinaryOperation
 {
     public NotEqualsOperation(SyntaxTree exp1, SyntaxTree exp2) : base(exp1, exp2) { }
 
-    public override char CheckType()
+    public override string CheckType()
     {
         throw new NotImplementedException();
     }
@@ -566,7 +611,7 @@ class GreaterThanOperation : BinaryOperation
 {
     public GreaterThanOperation(SyntaxTree exp1, SyntaxTree exp2) : base(exp1, exp2) { }
 
-    public override char CheckType()
+    public override string CheckType()
     {
         throw new NotImplementedException();
     }
@@ -581,7 +626,7 @@ class GreaterOrEqualOperation : BinaryOperation
 {
     public GreaterOrEqualOperation(SyntaxTree exp1, SyntaxTree exp2) : base(exp1, exp2) { }
 
-    public override char CheckType()
+    public override string CheckType()
     {
         throw new NotImplementedException();
     }
@@ -596,7 +641,7 @@ class LessThanOperation : BinaryOperation
 {
     public LessThanOperation(SyntaxTree exp1, SyntaxTree exp2) : base(exp1, exp2) { }
 
-    public override char CheckType()
+    public override string CheckType()
     {
         throw new NotImplementedException();
     }
@@ -611,7 +656,7 @@ class LessOrEqualOperation : BinaryOperation
 {
     public LessOrEqualOperation(SyntaxTree exp1, SyntaxTree exp2) : base(exp1, exp2) { }
 
-    public override char CheckType()
+    public override string CheckType()
     {
         throw new NotImplementedException();
     }
@@ -626,7 +671,7 @@ class AdditionOperation : BinaryOperation
 {
     public AdditionOperation(SyntaxTree exp1, SyntaxTree exp2) : base(exp1, exp2) { }
 
-    public override char CheckType()
+    public override string CheckType()
     {
         throw new NotImplementedException();
     }
@@ -641,7 +686,7 @@ class SubstractionOperation : BinaryOperation
 {
     public SubstractionOperation(SyntaxTree exp1, SyntaxTree exp2) : base(exp1, exp2) { }
 
-    public override char CheckType()
+    public override string CheckType()
     {
         throw new NotImplementedException();
     }
@@ -656,7 +701,7 @@ class MultiplicationOperation : BinaryOperation
 {
     public MultiplicationOperation(SyntaxTree exp1, SyntaxTree exp2) : base(exp1, exp2) { }
 
-    public override char CheckType()
+    public override string CheckType()
     {
         throw new NotImplementedException();
     }
@@ -671,7 +716,7 @@ class DivisionOperation : BinaryOperation
 {
     public DivisionOperation(SyntaxTree exp1, SyntaxTree exp2) : base(exp1, exp2) { }
 
-    public override char CheckType()
+    public override string CheckType()
     {
         throw new NotImplementedException();
     }
@@ -686,7 +731,7 @@ class BitwiseSumOperation : BinaryOperation
 {
     public BitwiseSumOperation(SyntaxTree exp1, SyntaxTree exp2) : base(exp1, exp2) { }
 
-    public override char CheckType()
+    public override string CheckType()
     {
         throw new NotImplementedException();
     }
@@ -701,7 +746,7 @@ class BitwiseProductOperation : BinaryOperation
 {
     public BitwiseProductOperation(SyntaxTree exp1, SyntaxTree exp2) : base(exp1, exp2) { }
 
-    public override char CheckType()
+    public override string CheckType()
     {
         throw new NotImplementedException();
     }
@@ -714,20 +759,21 @@ class BitwiseProductOperation : BinaryOperation
 
 class HexWriteInstruction : SyntaxTree
 {
-    private SyntaxTree value;
+    private SyntaxTree expression;
 
-    public HexWriteInstruction(SyntaxTree val)
+    public HexWriteInstruction(SyntaxTree exp)
     {
-        value = val;
+        expression = exp;
     }
 
-    public override char CheckType()
+    public override string CheckType()
     {
         throw new NotImplementedException();
     }
 
     public override string GenCode()
     {
+        string value = expression.GenCode();
         Compiler.EmitCode($"call i32 (i8*, ...) @printf(i8* bitcast ([5 x i8]* @hex_int_print to i8*), i32 {value.ToString()})");
         return null;
     }
@@ -742,9 +788,9 @@ class StringWriteInstruction : SyntaxTree
         stringInfo = info;
     }
 
-    public override char CheckType()
+    public override string CheckType()
     {
-        throw new NotImplementedException();
+        return null;
     }
 
     public override string GenCode()
