@@ -792,12 +792,18 @@ class AdditionOperation : BinaryOperation
 
     public override string CheckType()
     {
-        throw new NotImplementedException();
+        typename = firstExpression.CheckType();
+        secondExpression.CheckType();
+        return typename;
     }
 
     public override string GenCode()
     {
-        throw new NotImplementedException();
+        string val1 = firstExpression.GenCode();
+        string val2 = secondExpression.GenCode();
+        string reg = Compiler.GetNextRegisterName();
+        Compiler.EmitCode($"{reg} = add {firstExpression.typename} {val1}, {val2}");
+        return reg;
     }
 }
 
@@ -807,12 +813,18 @@ class SubstractionOperation : BinaryOperation
 
     public override string CheckType()
     {
-        throw new NotImplementedException();
+        typename = firstExpression.CheckType();
+        secondExpression.CheckType();
+        return typename;
     }
 
     public override string GenCode()
     {
-        throw new NotImplementedException();
+        string val1 = firstExpression.GenCode();
+        string val2 = secondExpression.GenCode();
+        string reg = Compiler.GetNextRegisterName();
+        Compiler.EmitCode($"{reg} = sub {firstExpression.typename} {val1}, {val2}");
+        return reg;
     }
 }
 
@@ -822,12 +834,18 @@ class MultiplicationOperation : BinaryOperation
 
     public override string CheckType()
     {
-        throw new NotImplementedException();
+        typename = firstExpression.CheckType();
+        secondExpression.CheckType();
+        return typename;
     }
 
     public override string GenCode()
     {
-        throw new NotImplementedException();
+        string val1 = firstExpression.GenCode();
+        string val2 = secondExpression.GenCode();
+        string reg = Compiler.GetNextRegisterName();
+        Compiler.EmitCode($"{reg} = mul {firstExpression.typename} {val1}, {val2}");
+        return reg;
     }
 }
 
@@ -837,12 +855,18 @@ class DivisionOperation : BinaryOperation
 
     public override string CheckType()
     {
-        throw new NotImplementedException();
+        typename = firstExpression.CheckType();
+        secondExpression.CheckType();
+        return typename;
     }
 
-    public override string GenCode()
+    public override string GenCode() // TODO: Fill in with fdiv usage for doubles while type checking implementation
     {
-        throw new NotImplementedException();
+        string val1 = firstExpression.GenCode();
+        string val2 = secondExpression.GenCode();
+        string reg = Compiler.GetNextRegisterName();
+        Compiler.EmitCode($"{reg} = sdiv {firstExpression.typename} {val1}, {val2}");
+        return reg;
     }
 }
 
