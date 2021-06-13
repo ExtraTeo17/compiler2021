@@ -8,11 +8,11 @@
 	public List<string> idents;
 }
 
-%token Program OpenBracket CloseBracket Write Semicolon Eof Comma Hex Assign LogicalSum LogicalProduct Equals NotEquals GreaterThan GreaterOrEqual LessThan LessOrEqual Plus Minus Multiplies Divides BitwiseSum BitwiseProduct BitwiseNegate LogicalNegate OpenPar ClosePar
+%token Program OpenBracket CloseBracket Write Semicolon Eof Comma Hex Assign LogicalSum LogicalProduct Equals NotEquals GreaterThan GreaterOrEqual LessThan LessOrEqual Plus Minus Multiplies Divides BitwiseSum BitwiseProduct BitwiseNegate LogicalNegate OpenPar ClosePar Return
 %token <val> IntNumber StringVar RealNumber BoolValue Ident Int Double Bool
 
 %type <val> typename
-%type <syntaxTree> instruction write_instruction block_instruction exp_instruction unary bitwise factor term relation logical assigner exp ident
+%type <syntaxTree> instruction write_instruction return_instruction block_instruction exp_instruction unary bitwise factor term relation logical assigner exp ident
 %type <syntaxTreeList> declarations declaration instructions
 %type <idents> identifiers
 
@@ -75,6 +75,13 @@ instructions		: instructions instruction
 instruction			: write_instruction { }
 					| exp_instruction { }
 					| block_instruction { }
+					| return_instruction { }
+					;
+
+return_instruction	: Return Semicolon
+					{
+						$$ = new ReturnInstruction();
+					}
 					;
 
 block_instruction	: OpenBracket instructions CloseBracket

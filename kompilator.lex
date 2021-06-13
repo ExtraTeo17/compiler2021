@@ -14,6 +14,7 @@ Ident		[A-Za-z][A-Za-z0-9]*
 "}"				{ return (int)Tokens.CloseBracket; }
 "write"			{ return (int)Tokens.Write; }
 "hex"			{ return (int)Tokens.Hex; }
+"return"		{ return (int)Tokens.Return; }
 "="				{ return (int)Tokens.Assign; }
 "||"			{ return (int)Tokens.LogicalSum; }
 "&&"			{ return (int)Tokens.LogicalProduct; }

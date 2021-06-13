@@ -926,6 +926,20 @@ class BlockInstruction : SyntaxTree
     }
 }
 
+class ReturnInstruction : SyntaxTree
+{
+    public override string CheckType()
+    {
+        return null;
+    }
+
+    public override string GenCode()
+    {
+        Compiler.EmitCode("ret i32 0");
+        return null;
+    }
+}
+
 class HexWriteInstruction : SyntaxTree
 {
     private SyntaxTree expression;
