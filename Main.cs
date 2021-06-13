@@ -373,7 +373,7 @@ class BoolValue : SyntaxTree
 
     public override string GenCode()
     {
-        return value.ToString();
+        return value ? "true" : "false";
     }
 }
 
@@ -406,12 +406,9 @@ class WriteInstruction : SyntaxTree
         }
         else if (expression.typename == "i1") // TODO: fix bool printing, probably a branch condition True/False
         {
-            if (value == "true")
-                Compiler.EmitCode("call i32 (i8*, ...) @printf(i8* bitcast ([5 x i8]* @bool_print_true to i8*))");
-            else if (value == "false")
-                Compiler.EmitCode("call i32 (i8*, ...) @printf(i8* bitcast ([6 x i8]* @bool_print_false to i8*))");
-            else
-                throw new Exception($"Invalid boolean value: {value} provided");
+            string reg = Compiler.GetNextRegisterName();
+            Compiler.EmitCode($"{reg} = select i1 {value}, i8* bitcast ([5 x i8]* @bool_print_true to i8*), i8* bitcast ([6 x i8]* @bool_print_false to i8*)");
+            Compiler.EmitCode($"call i32 (i8*, ...) @printf(i8* {reg})");
         }
         else
         {
@@ -480,16 +477,14 @@ class LogicalNegateOperation : UnaryOperation
         return typename;
     }
 
-    public override string GenCode() // TODO: maybe hide that it works not only for bool when you'll be checking types
+    public override string GenCode()
     {
         string value = expression.GenCode();
         string reg = Compiler.GetNextRegisterName();
         Compiler.EmitCode($"{reg} = icmp ne {expression.typename} {value}, 0");
         string reg2 = Compiler.GetNextRegisterName();
         Compiler.EmitCode($"{reg2} = xor i1 {reg}, true");
-        string reg3 = Compiler.GetNextRegisterName();
-        Compiler.EmitCode($"{reg3} = zext i1 {reg2} to {expression.typename}");
-        return reg3;
+        return reg2;
     }
 }
 
