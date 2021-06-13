@@ -27,6 +27,9 @@ llvm_tools
 stuff
 kompilator.cs
 parser.cs
+foo.ll
+clang_for_c.bat
+clang_for_llvm.bat
 
 # Build results
 [Dd]ebug/
