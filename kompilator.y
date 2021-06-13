@@ -86,94 +86,94 @@ exp					: ident Assign assigner
 					| assigner { }
 					;
 
-assigner			: logical LogicalSum logical
+assigner			: assigner LogicalSum logical
 					{
 						$$ = new LogicalSumOperation($1, $3);
 					}
-					| logical LogicalProduct logical
+					| assigner LogicalProduct logical
 					{
 						$$ = new LogicalProductOperation($1, $3);
 					}
 					| logical { }
 					;
 
-logical				: relation Equals relation
+logical				: logical Equals relation
 					{
 						$$ = new EqualsOperation($1, $3);
 					}
-					| relation NotEquals relation
+					| logical NotEquals relation
 					{
 						$$ = new NotEqualsOperation($1, $3);
 					}
-					| relation GreaterThan relation
+					| logical GreaterThan relation
 					{
 						$$ = new GreaterThanOperation($1, $3);
 					}
-					| relation GreaterOrEqual relation
+					| logical GreaterOrEqual relation
 					{
 						$$ = new GreaterOrEqualOperation($1, $3);
 					}
-					| relation LessThan relation
+					| logical LessThan relation
 					{
 						$$ = new LessThanOperation($1, $3);
 					}
-					| relation LessOrEqual relation
+					| logical LessOrEqual relation
 					{
 						$$ = new LessOrEqualOperation($1, $3);
 					}
 					| relation { }
 					;
 
-relation			: term Plus term
+relation			: relation Plus term
 					{
 						$$ = new AdditionOperation($1, $3);
 					}
-					| term Minus term
+					| relation Minus term
 					{
 						$$ = new SubstractionOperation($1, $3);
 					}
 					| term { }
 					;
 
-term				: factor Multiplies factor
+term				: term Multiplies factor
 					{
 						$$ = new MultiplicationOperation($1, $3);
 					}
-					| factor Divides factor
+					| term Divides factor
 					{
 						$$ = new DivisionOperation($1, $3);
 					}
 					| factor { }
 					;
 
-factor				: bitwise BitwiseSum bitwise
+factor				: factor BitwiseSum bitwise
 					{
 						$$ = new BitwiseSumOperation($1, $3);
 					}
-					| bitwise BitwiseProduct bitwise
+					| factor BitwiseProduct bitwise
 					{
 						$$ = new BitwiseProductOperation($1, $3);
 					}
 					| bitwise { }
 					;
 
-bitwise				: Minus unary
+bitwise				: Minus bitwise
 					{
 						$$ = new UnaryMinusOperation($2);
 					}
-					| BitwiseNegate unary
+					| BitwiseNegate bitwise
 					{
 						$$ = new BitwiseNegateOperation($2);
 					}
-					| LogicalNegate unary
+					| LogicalNegate bitwise
 					{
 						$$ = new LogicalNegateOperation($2);
 					}
-					| OpenPar Int ClosePar unary
+					| OpenPar Int ClosePar bitwise
 					{
 						$$ = new ConvertToIntOperation($4);
 					}
-					| OpenPar Double ClosePar unary
+					| OpenPar Double ClosePar bitwise
 					{
 						$$ = new ConvertToDoubleOperation($4);
 					}

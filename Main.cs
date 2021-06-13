@@ -145,9 +145,9 @@ public class Compiler
         return "string" + stringVarNameId++;
     }
 
-    public static string NextRegisterName()
+    public static string GetNextRegisterName()
     {
-        return "register" + registerNameId++;
+        return "%register" + registerNameId++;
     }
 }
 
@@ -303,9 +303,9 @@ class Identifier : SyntaxTree
 
     public override string GenCode()
     {
-        string registerName = Compiler.NextRegisterName();
-        Compiler.EmitCode($"%{registerName} = load {typename}, {typename}* %{name}");
-        return "%" + registerName;
+        string register = Compiler.GetNextRegisterName();
+        Compiler.EmitCode($"{register} = load {typename}, {typename}* %{name}");
+        return register;
     }
 
     public override string ToString()
@@ -373,7 +373,7 @@ class BoolValue : SyntaxTree
 
     public override string GenCode()
     {
-        throw new NotImplementedException();
+        return value.ToString();
     }
 }
 
@@ -438,12 +438,16 @@ class UnaryMinusOperation : UnaryOperation
 
     public override string CheckType()
     {
-        throw new NotImplementedException();
+        typename = expression.CheckType();
+        return typename;
     }
 
     public override string GenCode()
     {
-        throw new NotImplementedException();
+        string value = expression.GenCode();
+        string register = Compiler.GetNextRegisterName();
+        Compiler.EmitCode($"{register} = sub {expression.typename} 0, {value}");
+        return register;
     }
 }
 
@@ -453,12 +457,16 @@ class BitwiseNegateOperation : UnaryOperation
 
     public override string CheckType()
     {
-        throw new NotImplementedException();
+        typename = expression.CheckType();
+        return typename;
     }
 
     public override string GenCode()
     {
-        throw new NotImplementedException();
+        string value = expression.GenCode();
+        string register = Compiler.GetNextRegisterName();
+        Compiler.EmitCode($"{register} = xor {expression.typename} {value}, -1");
+        return register;
     }
 }
 
