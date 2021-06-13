@@ -874,14 +874,19 @@ class BitwiseSumOperation : BinaryOperation
 {
     public BitwiseSumOperation(SyntaxTree exp1, SyntaxTree exp2) : base(exp1, exp2) { }
 
-    public override string CheckType()
+    public override string CheckType() // TODO: only int
     {
-        throw new NotImplementedException();
+        typename = "i32";
+        return typename;
     }
 
     public override string GenCode()
     {
-        throw new NotImplementedException();
+        string val1 = firstExpression.GenCode();
+        string val2 = secondExpression.GenCode();
+        string reg = Compiler.GetNextRegisterName();
+        Compiler.EmitCode($"{reg} = or i32 {val1}, {val2}");
+        return reg;
     }
 }
 
@@ -889,14 +894,19 @@ class BitwiseProductOperation : BinaryOperation
 {
     public BitwiseProductOperation(SyntaxTree exp1, SyntaxTree exp2) : base(exp1, exp2) { }
 
-    public override string CheckType()
+    public override string CheckType() // TODO: only int
     {
-        throw new NotImplementedException();
+        typename = "i32";
+        return typename;
     }
 
     public override string GenCode()
     {
-        throw new NotImplementedException();
+        string val1 = firstExpression.GenCode();
+        string val2 = secondExpression.GenCode();
+        string reg = Compiler.GetNextRegisterName();
+        Compiler.EmitCode($"{reg} = and i32 {val1}, {val2}");
+        return reg;
     }
 }
 
