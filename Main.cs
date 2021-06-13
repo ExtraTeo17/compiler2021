@@ -232,6 +232,11 @@ public abstract class SyntaxTree
     public int line = -1;
     public abstract char CheckType();
     public abstract string GenCode();
+
+    public override string ToString()
+    {
+        return $"SyntaxTree: [{base.ToString()}]";
+    }
 }
 
 class Program : SyntaxTree
@@ -290,11 +295,11 @@ class Identifier : SyntaxTree
     }
 }
 
-class IntWriteInstruction : SyntaxTree
+class IntNumber : SyntaxTree
 {
     private int value;
 
-    public IntWriteInstruction(int val)
+    public IntNumber(int val)
     {
         value = val;
     }
@@ -306,14 +311,83 @@ class IntWriteInstruction : SyntaxTree
 
     public override string GenCode()
     {
+        throw new NotImplementedException();
+    }
+}
+
+class RealNumber : SyntaxTree
+{
+    private double value;
+
+    public RealNumber(double val)
+    {
+        value = val;
+    }
+
+    public override char CheckType()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override string GenCode()
+    {
+        throw new NotImplementedException();
+    }
+}
+
+class BoolValue : SyntaxTree
+{
+    private bool value;
+
+    public BoolValue(bool val)
+    {
+        value = val;
+    }
+
+    public override char CheckType()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override string GenCode()
+    {
+        throw new NotImplementedException();
+    }
+}
+
+class WriteInstruction : SyntaxTree
+{
+    private SyntaxTree value;
+
+    public WriteInstruction(SyntaxTree val)
+    {
+        value = val;
+    }
+
+    public override char CheckType()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override string GenCode()
+    {
+        // int
         Compiler.EmitCode($"call i32 (i8*, ...) @printf(i8* bitcast ([3 x i8]* @int_print to i8*), i32 {value.ToString()})");
+        // double
+        Compiler.EmitCode($"call i32 (i8*, ...) @printf(i8* bitcast ([4 x i8]* @double_print to i8*), double {value.ToString()})");
+        // bool
+        if (value)
+            Compiler.EmitCode("call i32 (i8*, ...) @printf(i8* bitcast ([5 x i8]* @bool_print_true to i8*))");
+        else
+            Compiler.EmitCode("call i32 (i8*, ...) @printf(i8* bitcast ([6 x i8]* @bool_print_false to i8*))");
+        // TODO: fix for different types
         return null;
     }
 }
 
 abstract class UnaryOperation : SyntaxTree
 {
-    private SyntaxTree expression;
+    protected SyntaxTree expression;
 
     public UnaryOperation(SyntaxTree exp)
     {
@@ -398,13 +472,18 @@ class ConvertToDoubleOperation : UnaryOperation
 
 abstract class BinaryOperation : SyntaxTree
 {
-    private SyntaxTree firstExpression;
-    private SyntaxTree secondExpression;
+    protected SyntaxTree firstExpression;
+    protected SyntaxTree secondExpression;
 
     public BinaryOperation(SyntaxTree exp1, SyntaxTree exp2)
     {
         firstExpression = exp1;
         secondExpression = exp2;
+    }
+
+    public override string ToString()
+    {
+        return $"BinaryOperation: [firstExpression: [{firstExpression}], secondExpression: [{secondExpression}]]";
     }
 }
 
@@ -633,11 +712,11 @@ class BitwiseProductOperation : BinaryOperation
     }
 }
 
-class IntHexWriteInstruction : SyntaxTree
+class HexWriteInstruction : SyntaxTree
 {
-    private int value;
+    private SyntaxTree value;
 
-    public IntHexWriteInstruction(int val)
+    public HexWriteInstruction(SyntaxTree val)
     {
         value = val;
     }
@@ -650,51 +729,6 @@ class IntHexWriteInstruction : SyntaxTree
     public override string GenCode()
     {
         Compiler.EmitCode($"call i32 (i8*, ...) @printf(i8* bitcast ([5 x i8]* @hex_int_print to i8*), i32 {value.ToString()})");
-        return null;
-    }
-}
-
-class DoubleWriteInstruction : SyntaxTree
-{
-    private double value;
-
-    public DoubleWriteInstruction(double val)
-    {
-        value = val;
-    }
-
-    public override char CheckType()
-    {
-        throw new NotImplementedException();
-    }
-
-    public override string GenCode()
-    {
-        Compiler.EmitCode($"call i32 (i8*, ...) @printf(i8* bitcast ([4 x i8]* @double_print to i8*), double {value.ToString()})");
-        return null;
-    }
-}
-
-class BooleanWriteInstruction : SyntaxTree
-{
-    private bool value;
-
-    public BooleanWriteInstruction(bool val)
-    {
-        value = val;
-    }
-
-    public override char CheckType()
-    {
-        throw new NotImplementedException();
-    }
-
-    public override string GenCode()
-    {
-        if (value)
-            Compiler.EmitCode("call i32 (i8*, ...) @printf(i8* bitcast ([5 x i8]* @bool_print_true to i8*))");
-        else
-            Compiler.EmitCode("call i32 (i8*, ...) @printf(i8* bitcast ([6 x i8]* @bool_print_false to i8*))");
         return null;
     }
 }
