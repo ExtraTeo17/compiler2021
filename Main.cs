@@ -309,8 +309,19 @@ class Identifier : SyntaxTree
 
     public override string CheckType()
     {
+        Console.WriteLine("KEYS");
+        foreach (var k in Compiler.symbolTable.Keys)
+        {
+            Console.WriteLine(k);
+        }
+        Console.WriteLine("VALUES");
+        foreach (var v in Compiler.symbolTable.Values)
+        {
+            Console.WriteLine(v);
+        }
+        Console.WriteLine("DESIRED KEY: " + name);
+
         typename = Compiler.symbolTable[name].typename;
-        Console.WriteLine("TYPENAME: " + typename + " IS FOR NAME: " + name);
         return typename;
     }
 
@@ -647,14 +658,21 @@ class EqualsOperation : BinaryOperation
 {
     public EqualsOperation(SyntaxTree exp1, SyntaxTree exp2) : base(exp1, exp2) { }
 
-    public override string CheckType()
+    public override string CheckType() // TODO: implement full proper semantic type checking in the entire project
     {
-        throw new NotImplementedException();
+        firstExpression.CheckType();
+        secondExpression.CheckType();
+        typename = "i1";
+        return typename;
     }
 
     public override string GenCode()
     {
-        throw new NotImplementedException();
+        string val1 = firstExpression.GenCode();
+        string val2 = secondExpression.GenCode();
+        string reg = Compiler.GetNextRegisterName();
+        Compiler.EmitCode($"{reg} = icmp eq {firstExpression.typename} {val1}, {val2}");
+        return reg;
     }
 }
 
@@ -664,12 +682,19 @@ class NotEqualsOperation : BinaryOperation
 
     public override string CheckType()
     {
-        throw new NotImplementedException();
+        firstExpression.CheckType();
+        secondExpression.CheckType();
+        typename = "i1";
+        return typename;
     }
 
     public override string GenCode()
     {
-        throw new NotImplementedException();
+        string val1 = firstExpression.GenCode();
+        string val2 = secondExpression.GenCode();
+        string reg = Compiler.GetNextRegisterName();
+        Compiler.EmitCode($"{reg} = icmp ne {firstExpression.typename} {val1}, {val2}");
+        return reg;
     }
 }
 
