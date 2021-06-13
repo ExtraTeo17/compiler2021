@@ -25,7 +25,7 @@ public class Compiler
     {
         string file;
         FileStream source;
-        Console.WriteLine("\nA Compiler for MINI language");
+        Console.WriteLine("\nCompiler for MINI programming language");
 
         if (args.Length >= 1)
         {
@@ -68,7 +68,7 @@ public class Compiler
             writer = new StreamWriter(file + ".ll");
             GenCode();
             writer.Close();
-            Console.WriteLine(" compilation successful\n");
+            Console.WriteLine("Compilation successful!");
         }
 
         return errors == 0 ? 0 : 3;
@@ -309,18 +309,6 @@ class Identifier : SyntaxTree
 
     public override string CheckType()
     {
-        Console.WriteLine("KEYS");
-        foreach (var k in Compiler.symbolTable.Keys)
-        {
-            Console.WriteLine(k);
-        }
-        Console.WriteLine("VALUES");
-        foreach (var v in Compiler.symbolTable.Values)
-        {
-            Console.WriteLine(v);
-        }
-        Console.WriteLine("DESIRED KEY: " + name);
-
         typename = Compiler.symbolTable[name].typename;
         return typename;
     }
@@ -910,6 +898,34 @@ class BitwiseProductOperation : BinaryOperation
     }
 }
 
+class BlockInstruction : SyntaxTree
+{
+    private List<SyntaxTree> instructions;
+
+    public BlockInstruction(List<SyntaxTree> instrList)
+    {
+        instructions = instrList;
+    }
+
+    public override string CheckType()
+    {
+        foreach (var instr in instructions)
+        {
+            instr.CheckType();
+        }
+        return null;
+    }
+
+    public override string GenCode()
+    {
+        foreach (var instr in instructions)
+        {
+            instr.GenCode();
+        }
+        return null;
+    }
+}
+
 class HexWriteInstruction : SyntaxTree
 {
     private SyntaxTree expression;
@@ -921,7 +937,7 @@ class HexWriteInstruction : SyntaxTree
 
     public override string CheckType()
     {
-        throw new NotImplementedException();
+        return null;
     }
 
     public override string GenCode()

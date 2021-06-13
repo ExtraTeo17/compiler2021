@@ -12,7 +12,7 @@
 %token <val> IntNumber StringVar RealNumber BoolValue Ident Int Double Bool
 
 %type <val> typename
-%type <syntaxTree> instruction write_instruction exp_instruction unary bitwise factor term relation logical assigner exp ident
+%type <syntaxTree> instruction write_instruction block_instruction exp_instruction unary bitwise factor term relation logical assigner exp ident
 %type <syntaxTreeList> declarations declaration instructions
 %type <idents> identifiers
 
@@ -74,6 +74,13 @@ instructions		: instructions instruction
 
 instruction			: write_instruction { }
 					| exp_instruction { }
+					| block_instruction { }
+					;
+
+block_instruction	: OpenBracket instructions CloseBracket
+					{
+						$$ = new BlockInstruction($2);
+					}
 					;
 
 exp_instruction		: exp Semicolon { }
