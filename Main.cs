@@ -704,12 +704,19 @@ class GreaterThanOperation : BinaryOperation
 
     public override string CheckType()
     {
-        throw new NotImplementedException();
+        firstExpression.CheckType();
+        secondExpression.CheckType();
+        typename = "i1";
+        return typename;
     }
 
     public override string GenCode()
     {
-        throw new NotImplementedException();
+        string val1 = firstExpression.GenCode();
+        string val2 = secondExpression.GenCode();
+        string reg = Compiler.GetNextRegisterName();
+        Compiler.EmitCode($"{reg} = icmp sgt {firstExpression.typename} {val1}, {val2}");
+        return reg;
     }
 }
 
@@ -719,12 +726,19 @@ class GreaterOrEqualOperation : BinaryOperation
 
     public override string CheckType()
     {
-        throw new NotImplementedException();
+        firstExpression.CheckType();
+        secondExpression.CheckType();
+        typename = "i1";
+        return typename;
     }
 
     public override string GenCode()
     {
-        throw new NotImplementedException();
+        string val1 = firstExpression.GenCode();
+        string val2 = secondExpression.GenCode();
+        string reg = Compiler.GetNextRegisterName();
+        Compiler.EmitCode($"{reg} = icmp sge {firstExpression.typename} {val1}, {val2}");
+        return reg;
     }
 }
 
@@ -734,12 +748,19 @@ class LessThanOperation : BinaryOperation
 
     public override string CheckType()
     {
-        throw new NotImplementedException();
+        firstExpression.CheckType();
+        secondExpression.CheckType();
+        typename = "i1";
+        return typename;
     }
 
     public override string GenCode()
     {
-        throw new NotImplementedException();
+        string val1 = firstExpression.GenCode();
+        string val2 = secondExpression.GenCode();
+        string reg = Compiler.GetNextRegisterName();
+        Compiler.EmitCode($"{reg} = icmp slt {firstExpression.typename} {val1}, {val2}");
+        return reg;
     }
 }
 
@@ -749,12 +770,19 @@ class LessOrEqualOperation : BinaryOperation
 
     public override string CheckType()
     {
-        throw new NotImplementedException();
+        firstExpression.CheckType();
+        secondExpression.CheckType();
+        typename = "i1";
+        return typename;
     }
 
     public override string GenCode()
     {
-        throw new NotImplementedException();
+        string val1 = firstExpression.GenCode();
+        string val2 = secondExpression.GenCode();
+        string reg = Compiler.GetNextRegisterName();
+        Compiler.EmitCode($"{reg} = icmp sle {firstExpression.typename} {val1}, {val2}");
+        return reg;
     }
 }
 
