@@ -270,6 +270,26 @@ class Program : SyntaxTree
     }
 }
 
+class Identifier : SyntaxTree
+{
+    private string name;
+
+    public Identifier(string id)
+    {
+        name = id;
+    }
+
+    public override char CheckType()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override string GenCode()
+    {
+        throw new NotImplementedException();
+    }
+}
+
 class IntWriteInstruction : SyntaxTree
 {
     private int value;
@@ -288,6 +308,328 @@ class IntWriteInstruction : SyntaxTree
     {
         Compiler.EmitCode($"call i32 (i8*, ...) @printf(i8* bitcast ([3 x i8]* @int_print to i8*), i32 {value.ToString()})");
         return null;
+    }
+}
+
+abstract class UnaryOperation : SyntaxTree
+{
+    private SyntaxTree expression;
+
+    public UnaryOperation(SyntaxTree exp)
+    {
+        expression = exp;
+    }
+}
+
+class UnaryMinusOperation : UnaryOperation
+{
+    public UnaryMinusOperation(SyntaxTree exp) : base(exp) { }
+
+    public override char CheckType()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override string GenCode()
+    {
+        throw new NotImplementedException();
+    }
+}
+
+class BitwiseNegateOperation : UnaryOperation
+{
+    public BitwiseNegateOperation(SyntaxTree exp) : base(exp) { }
+
+    public override char CheckType()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override string GenCode()
+    {
+        throw new NotImplementedException();
+    }
+}
+
+class LogicalNegateOperation : UnaryOperation
+{
+    public LogicalNegateOperation(SyntaxTree exp) : base(exp) { }
+
+    public override char CheckType()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override string GenCode()
+    {
+        throw new NotImplementedException();
+    }
+}
+
+class ConvertToIntOperation : UnaryOperation
+{
+    public ConvertToIntOperation(SyntaxTree exp) : base(exp) { }
+
+    public override char CheckType()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override string GenCode()
+    {
+        throw new NotImplementedException();
+    }
+}
+
+class ConvertToDoubleOperation : UnaryOperation
+{
+    public ConvertToDoubleOperation(SyntaxTree exp) : base(exp) { }
+
+    public override char CheckType()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override string GenCode()
+    {
+        throw new NotImplementedException();
+    }
+}
+
+abstract class BinaryOperation : SyntaxTree
+{
+    private SyntaxTree firstExpression;
+    private SyntaxTree secondExpression;
+
+    public BinaryOperation(SyntaxTree exp1, SyntaxTree exp2)
+    {
+        firstExpression = exp1;
+        secondExpression = exp2;
+    }
+}
+
+class AssignOperation : BinaryOperation
+{
+    public AssignOperation(SyntaxTree exp1, SyntaxTree exp2) : base(exp1, exp2) { }
+
+    public override char CheckType()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override string GenCode()
+    {
+        throw new NotImplementedException();
+    }
+}
+
+class LogicalSumOperation : BinaryOperation
+{
+    public LogicalSumOperation(SyntaxTree exp1, SyntaxTree exp2) : base(exp1, exp2) { }
+
+    public override char CheckType()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override string GenCode()
+    {
+        throw new NotImplementedException();
+    }
+}
+
+class LogicalProductOperation : BinaryOperation
+{
+    public LogicalProductOperation(SyntaxTree exp1, SyntaxTree exp2) : base(exp1, exp2) { }
+
+    public override char CheckType()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override string GenCode()
+    {
+        throw new NotImplementedException();
+    }
+}
+
+class EqualsOperation : BinaryOperation
+{
+    public EqualsOperation(SyntaxTree exp1, SyntaxTree exp2) : base(exp1, exp2) { }
+
+    public override char CheckType()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override string GenCode()
+    {
+        throw new NotImplementedException();
+    }
+}
+
+class NotEqualsOperation : BinaryOperation
+{
+    public NotEqualsOperation(SyntaxTree exp1, SyntaxTree exp2) : base(exp1, exp2) { }
+
+    public override char CheckType()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override string GenCode()
+    {
+        throw new NotImplementedException();
+    }
+}
+
+class GreaterThanOperation : BinaryOperation
+{
+    public GreaterThanOperation(SyntaxTree exp1, SyntaxTree exp2) : base(exp1, exp2) { }
+
+    public override char CheckType()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override string GenCode()
+    {
+        throw new NotImplementedException();
+    }
+}
+
+class GreaterOrEqualOperation : BinaryOperation
+{
+    public GreaterOrEqualOperation(SyntaxTree exp1, SyntaxTree exp2) : base(exp1, exp2) { }
+
+    public override char CheckType()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override string GenCode()
+    {
+        throw new NotImplementedException();
+    }
+}
+
+class LessThanOperation : BinaryOperation
+{
+    public LessThanOperation(SyntaxTree exp1, SyntaxTree exp2) : base(exp1, exp2) { }
+
+    public override char CheckType()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override string GenCode()
+    {
+        throw new NotImplementedException();
+    }
+}
+
+class LessOrEqualOperation : BinaryOperation
+{
+    public LessOrEqualOperation(SyntaxTree exp1, SyntaxTree exp2) : base(exp1, exp2) { }
+
+    public override char CheckType()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override string GenCode()
+    {
+        throw new NotImplementedException();
+    }
+}
+
+class AdditionOperation : BinaryOperation
+{
+    public AdditionOperation(SyntaxTree exp1, SyntaxTree exp2) : base(exp1, exp2) { }
+
+    public override char CheckType()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override string GenCode()
+    {
+        throw new NotImplementedException();
+    }
+}
+
+class SubstractionOperation : BinaryOperation
+{
+    public SubstractionOperation(SyntaxTree exp1, SyntaxTree exp2) : base(exp1, exp2) { }
+
+    public override char CheckType()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override string GenCode()
+    {
+        throw new NotImplementedException();
+    }
+}
+
+class MultiplicationOperation : BinaryOperation
+{
+    public MultiplicationOperation(SyntaxTree exp1, SyntaxTree exp2) : base(exp1, exp2) { }
+
+    public override char CheckType()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override string GenCode()
+    {
+        throw new NotImplementedException();
+    }
+}
+
+class DivisionOperation : BinaryOperation
+{
+    public DivisionOperation(SyntaxTree exp1, SyntaxTree exp2) : base(exp1, exp2) { }
+
+    public override char CheckType()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override string GenCode()
+    {
+        throw new NotImplementedException();
+    }
+}
+
+class BitwiseSumOperation : BinaryOperation
+{
+    public BitwiseSumOperation(SyntaxTree exp1, SyntaxTree exp2) : base(exp1, exp2) { }
+
+    public override char CheckType()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override string GenCode()
+    {
+        throw new NotImplementedException();
+    }
+}
+
+class BitwiseProductOperation : BinaryOperation
+{
+    public BitwiseProductOperation(SyntaxTree exp1, SyntaxTree exp2) : base(exp1, exp2) { }
+
+    public override char CheckType()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override string GenCode()
+    {
+        throw new NotImplementedException();
     }
 }
 

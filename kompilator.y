@@ -15,7 +15,7 @@
 %token <val> IntNumber StringVar RealNumber Boolean Ident Int Double Bool
 
 %type <val> typename
-%type <syntaxTree> instruction write_instruction exp_instruction unary bitwise factor term relation logical assigner exp
+%type <syntaxTree> instruction write_instruction exp_instruction unary bitwise factor term relation logical assigner exp ident
 %type <syntaxTreeList> instructions
 %type <symbolDict> declarations
 %type <declList> declaration
@@ -89,7 +89,7 @@ instruction			: write_instruction { }
 exp_instruction		: exp Semicolon { }
 					;
 
-exp					: Ident Assign assigner
+exp					: ident Assign assigner
 					{
 						$$ = new AssignOperation($1, $3);
 					}
@@ -197,7 +197,13 @@ unary				: OpenPar exp ClosePar
 					| IntNumber { }
 					| RealNumber { }
 					| Boolean { }
-					| Ident { }
+					| ident { }
+					;
+
+ident				: Ident
+					{
+						$$ = new Identifier($1);
+					}
 					;
 
 write_instruction	: Write IntNumber Semicolon
