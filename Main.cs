@@ -210,7 +210,7 @@ public class Declaration : SyntaxTree
 
     public override string GenCode()
     {
-        Compiler.EmitCode($"%{identifier} = alloca {typename}");
+        Compiler.EmitCode($"%var_{identifier} = alloca {typename}");
         return null;
     }
 
@@ -317,7 +317,7 @@ class Identifier : SyntaxTree
     public override string GenCode()
     {
         string register = Compiler.GetNextRegisterName();
-        Compiler.EmitCode($"{register} = load {typename}, {typename}* %{name}");
+        Compiler.EmitCode($"{register} = load {typename}, {typename}* %var_{name}");
         return register;
     }
 
@@ -554,19 +554,25 @@ class AssignOperation : BinaryOperation
 
     public override string CheckType() // TODO: make sure you can repeat this method everywhere like that
     {
-        firstExpression.CheckType();
+        typename = firstExpression.CheckType();
         secondExpression.CheckType(); // TODO: calculate typename for AssignOp
-        return null;
+        return firstExpression.typename;
     }
 
     public override string GenCode()
     {
         string secondExpValue = secondExpression.GenCode();
         string secondExpTypename = secondExpression.typename;
+        if (secondExpValue.StartsWith("%var_"))
+        {
+            string varName = secondExpValue;
+            secondExpValue = Compiler.GetNextRegisterName();
+            Compiler.EmitCode($"{secondExpValue} = load {secondExpTypename}, {secondExpTypename}* {varName}");
+        }
         Identifier ident = firstExpression as Identifier;
-        string firstExpValue = ident.name;
+        string firstExpValue = "%var_" + ident.name;
         string firstExpTypename = firstExpression.typename;
-        Compiler.EmitCode($"store {secondExpTypename} {secondExpValue}, {firstExpTypename}* %{firstExpValue}");
+        Compiler.EmitCode($"store {secondExpTypename} {secondExpValue}, {firstExpTypename}* {firstExpValue}");
         return firstExpValue;
     }
 }
@@ -618,7 +624,22 @@ class LogicalProductOperation : BinaryOperation
 
     public override string GenCode()
     {
-        throw new NotImplementedException();
+        string value1 = firstExpression.GenCode();
+        string value2 = secondExpression.GenCode();
+        string curLabel = Compiler.GetCurrentLabelName();
+        string label1 = Compiler.GetNextLabelName();
+        string label2 = Compiler.GetNextLabelName();
+        string reg1 = Compiler.GetNextRegisterName();
+        Compiler.EmitCode($"{reg1} = icmp ne i1 {value1}, 0");
+        Compiler.EmitCode($"br i1 {reg1}, label %{label1}, label %{label2}");
+        Compiler.EmitCode($"{label1}:");
+        string reg2 = Compiler.GetNextRegisterName();
+        Compiler.EmitCode($"{reg2} = icmp ne i1 {value2}, 0");
+        Compiler.EmitCode($"br label %{label2}");
+        Compiler.EmitCode($"{label2}:");
+        string reg3 = Compiler.GetNextRegisterName();
+        Compiler.EmitCode($"{reg3} = phi i1 [ false, %{curLabel} ], [ {reg2}, %{label1} ]");
+        return reg3;
     }
 }
 
@@ -819,7 +840,7 @@ class HexWriteInstruction : SyntaxTree
     public override string GenCode()
     {
         string value = expression.GenCode();
-        Compiler.EmitCode($"call i32 (i8*, ...) @printf(i8* bitcast ([5 x i8]* @hex_int_print to i8*), i32 {value.ToString()})");
+        Compiler.EmitCode($"call i32 (i8*, ...) @printf(i8* bitcast ([5 x i8]* @hex_int_print to i8*), i32 {value})");
         return null;
     }
 }

@@ -79,7 +79,7 @@ instruction			: write_instruction { }
 exp_instruction		: exp Semicolon { }
 					;
 
-exp					: ident Assign assigner
+exp					: ident Assign exp
 					{
 						$$ = new AssignOperation($1, $3);
 					}
