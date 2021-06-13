@@ -476,12 +476,20 @@ class LogicalNegateOperation : UnaryOperation
 
     public override string CheckType()
     {
-        throw new NotImplementedException();
+        typename = expression.CheckType();
+        return typename;
     }
 
-    public override string GenCode()
+    public override string GenCode() // TODO: maybe hide that it works not only for bool when you'll be checking types
     {
-        throw new NotImplementedException();
+        string value = expression.GenCode();
+        string reg = Compiler.GetNextRegisterName();
+        Compiler.EmitCode($"{reg} = icmp ne {expression.typename} {value}, 0");
+        string reg2 = Compiler.GetNextRegisterName();
+        Compiler.EmitCode($"{reg2} = xor i1 {reg}, true");
+        string reg3 = Compiler.GetNextRegisterName();
+        Compiler.EmitCode($"{reg3} = zext i1 {reg2} to {expression.typename}");
+        return reg3;
     }
 }
 
