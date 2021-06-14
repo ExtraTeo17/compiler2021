@@ -129,6 +129,11 @@ public class Compiler
         PrintError("Syntax error", lineno.ToString(), content);
     }
 
+    public static void HandleSemanticError(int line, string content)
+    {
+        PrintError("Semantic error", line.ToString(), content);
+    }
+
     private static void PrintError(string errorType, string lineNum = null, string errorContent = null)
     {
         ++errors;
@@ -138,6 +143,11 @@ public class Compiler
             Console.WriteLine(errorType + ": line " + lineNum);
         else
             Console.WriteLine(errorType);
+    }
+
+    public static int CurrentLine()
+    {
+        return lineno;
     }
 
     public static void NextLine()
@@ -348,11 +358,15 @@ class Identifier : SyntaxTree
     public Identifier(string id)
     {
         name = id;
+        line = Compiler.CurrentLine();
     }
 
     public override string CheckType()
     {
-        typename = Compiler.symbolTable[name].typename;
+        if (Compiler.symbolTable.ContainsKey(name))
+            typename = Compiler.symbolTable[name].typename;
+        else
+            Compiler.HandleSemanticError(line, "undeclared variable: " + name);
         return typename;
     }
 
