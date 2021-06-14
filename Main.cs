@@ -401,23 +401,23 @@ class WriteInstruction : SyntaxTree
 
     public override string CheckType()
     {
-        expression.CheckType();
-        return null;
+        typename = expression.CheckType();
+        return typename;
     }
 
     public override string GenCode()
     {
         string value = expression.GenCode();
 
-        if (expression.typename == "i32")
+        if (typename == "i32")
         {
             Compiler.EmitCode($"call i32 (i8*, ...) @printf(i8* bitcast ([3 x i8]* @int_print to i8*), i32 {value})");
         }
-        else if (expression.typename == "double")
+        else if (typename == "double")
         {
             Compiler.EmitCode($"call i32 (i8*, ...) @printf(i8* bitcast ([4 x i8]* @double_print to i8*), double {value})");
         }
-        else if (expression.typename == "i1") // TODO: fix bool printing, probably a branch condition True/False
+        else if (typename == "i1") // TODO: fix bool printing, probably a branch condition True/False
         {
             string reg = Compiler.GetNextRegisterName();
             Compiler.EmitCode($"{reg} = select i1 {value}, i8* bitcast ([5 x i8]* @bool_print_true to i8*), i8* bitcast ([6 x i8]* @bool_print_false to i8*)");
@@ -425,7 +425,7 @@ class WriteInstruction : SyntaxTree
         }
         else
         {
-            throw new Exception($"Invalid expression typename: {expression.typename} provided");
+            throw new Exception($"Invalid typename: {typename} provided");
         }
 
         return null;
@@ -1038,37 +1038,53 @@ class HexWriteInstruction : SyntaxTree
 
 class ReadInstruction : SyntaxTree
 {
-    private string identName;
+    private SyntaxTree identifier;
 
-    public ReadInstruction(string ident)
+    public ReadInstruction(SyntaxTree ident)
     {
-        identName = ident;
+        identifier = ident;
     }
 
-    public override string CheckType()
+    public override string CheckType() // TODO: INT OR DOUBLE, CHECK HERE PLS!!!
     {
-        return null;
+        typename = identifier.CheckType();
+        return typename;
     }
 
     public override string GenCode()
     {
-        Compiler.EmitCode($"call i32 (i8*, ...) @scanf_s(i8* bitcast ([3 x i8]* @int_print to i8*), i32* %var_{identName})");
+        Identifier ident = identifier as Identifier;
+
+        if (typename == "i32")
+        {
+            Compiler.EmitCode($"call i32 (i8*, ...) @scanf_s(i8* bitcast ([3 x i8]* @int_print to i8*), {typename}* %var_{ident.name})");
+        }
+        else if (typename == "double")
+        {
+            Compiler.EmitCode($"call i32 (i8*, ...) @scanf_s(i8* bitcast ([4 x i8]* @double_print to i8*), {typename}* %var_{ident.name})");
+        }
+        else
+        {
+            throw new Exception($"Invalid typename: {typename} provided");
+        }
+
         return null;
     }
 }
 
 class HexReadInstruction : SyntaxTree
 {
-    private string identName;
+    private SyntaxTree identifier;
 
-    public HexReadInstruction(string ident)
+    public HexReadInstruction(SyntaxTree ident)
     {
-        identName = ident;
+        identifier = ident;
     }
 
     public override string CheckType()
     {
-        return null;
+        typename = "i32";
+        return typename;
     }
 
     public override string GenCode()

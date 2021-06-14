@@ -81,11 +81,11 @@ instruction			: write_instruction { }
 					| loop_instruction { }
 					;
 
-read_instruction	: Read Ident Semicolon
+read_instruction	: Read ident Semicolon
 					{
 						$$ = new ReadInstruction($2);
 					}
-					| Read Ident Comma Hex Semicolon
+					| Read ident Comma Hex Semicolon
 					{
 						$$ = new HexReadInstruction($2);
 					}
