@@ -61,8 +61,7 @@ public class Compiler
 
         if (syntaxTree == null)
         {
-            ++errors;
-            Console.WriteLine("Compilation error");
+            PrintError("Compilation error");
         }
         else
         {
@@ -117,13 +116,23 @@ public class Compiler
 
     public static void HandleLexicalError(string symbol)
     {
-        ++errors;
-        PrintError("Lexical error", lineno, "unexpected symbol " + Regex.Unescape(symbol));
+        PrintError("Lexical error", lineno.ToString(), "unexpected symbol " + Regex.Unescape(symbol));
     }
 
-    private static void PrintError(string errorType, int lineNum, string errorContent)
+    public static void HandleSyntaxError()
     {
-        Console.WriteLine(errorType + ": line " + lineNum + " -- " + errorContent);
+        PrintError("Syntax error", lineno.ToString());
+    }
+
+    private static void PrintError(string errorType, string lineNum = null, string errorContent = null)
+    {
+        ++errors;
+        if (errorContent != null)
+            Console.WriteLine(errorType + ": line " + lineNum + " -- " + errorContent);
+        else if (lineNum != null)
+            Console.WriteLine(errorType + ": line " + lineNum);
+        else
+            Console.WriteLine(errorType);
     }
 
     public static void NextLine()

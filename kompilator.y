@@ -44,6 +44,11 @@ declaration			: typename identifiers Semicolon
 						}
 						$$ = declarations;
 					}
+					| error Semicolon
+					{
+						Compiler.HandleSyntaxError();
+						$$ = new List<SyntaxTree>();
+					}
 					;
 					
 typename			: Int { }
@@ -64,7 +69,10 @@ identifiers			: identifiers Comma Ident
 
 instructions		: instructions instruction
 					{
-						$1.Add($2);
+						if ($2 != null)
+						{
+							$1.Add($2);
+						}
 					}
 					|
 					{
@@ -75,10 +83,14 @@ instructions		: instructions instruction
 instruction			: write_instruction { }
 					| read_instruction { }
 					| exp_instruction { }
-					| block_instruction { }
 					| return_instruction { }
+					| block_instruction { }
 					| if_else_instruction { }
 					| loop_instruction { }
+					| error Semicolon
+					{
+						Compiler.HandleSyntaxError();
+					}
 					;
 
 read_instruction	: Read ident Semicolon
