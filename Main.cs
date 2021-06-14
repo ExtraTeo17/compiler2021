@@ -584,7 +584,27 @@ class ConvertToIntOperation : UnaryOperation
 
     public override string GenCode()
     {
-        throw new NotImplementedException();
+        string value = expression.GenCode();
+        if (expression.typename == "i32")
+        {
+            return value;
+        }
+        else if (expression.typename == "double")
+        {
+            string reg1 = Compiler.GetNextRegisterName();
+            Compiler.EmitCode($"{reg1} = fptosi double {value} to i32");
+            return reg1;
+        }
+        else if (expression.typename == "i1")
+        {
+            string reg1 = Compiler.GetNextRegisterName();
+            Compiler.EmitCode($"{reg1} = zext i1 {value} to i32");
+            return reg1;
+        }
+        else
+        {
+            throw new Exception("Unknown type: " + expression.typename);
+        }
     }
 }
 
