@@ -28,6 +28,7 @@ program				: Program OpenBracket declarations instructions CloseBracket Eof
 					}
 					| Program OpenBracket declarations instructions Eof
 					{
+						Compiler.syntaxTree = new Program($3, $4);
 						Compiler.HandleSyntaxError("unexpected end of file");
 						YYABORT;
 					}
@@ -144,6 +145,7 @@ block_instruction	: OpenBracket instructions CloseBracket
 					}
 					| OpenBracket instructions Eof
 					{
+						$$ = new BlockInstruction($2);
 						Compiler.HandleSyntaxError("unexpected end of file");
 						YYABORT;
 					}

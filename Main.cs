@@ -56,17 +56,17 @@ public class Compiler
         Scanner scanner = new Scanner(source);
         Parser parser = new Parser(scanner);
         Console.WriteLine();
-        parser.Parse();
-        source.Close();
 
-        if (syntaxTree == null)
-        {
-            PrintError("Compilation error");
-        }
-        else
-        {
+        /*try
+        {*/
+            parser.Parse();
+            source.Close();
             syntaxTree.CheckType();
-        }
+        /*}
+        catch (Exception e)
+        {
+            PrintError("Compilation error"); // TODO: bring back when ready!!
+        }*/
 
         if (errors > 0)
         {
@@ -1113,7 +1113,7 @@ class ConditionalInstruction : SyntaxTree
         {
             Compiler.HandleSemanticError(condition.line, "condition for 'if' instruction has to be of bool type instead of type: " + (condition.typename == "i32" ? "int" : condition.typename));
         }
-        ifInstruction.CheckType();
+        ifInstruction?.CheckType();
         if (elseInstruction != null)
             elseInstruction.CheckType();
         return null;
