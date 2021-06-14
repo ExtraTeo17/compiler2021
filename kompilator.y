@@ -8,7 +8,7 @@
 	public List<string> idents;
 }
 
-%token Program OpenBracket CloseBracket Read Write Semicolon Eof Comma Hex Assign LogicalSum LogicalProduct Equals NotEquals GreaterThan GreaterOrEqual LessThan LessOrEqual Plus Minus Multiplies Divides BitwiseSum BitwiseProduct BitwiseNegate LogicalNegate OpenPar ClosePar Return If Else While Error
+%token Program OpenBracket CloseBracket Read Write Semicolon Eof Comma Hex Assign LogicalSum LogicalProduct Equals NotEquals GreaterThan GreaterOrEqual LessThan LessOrEqual Plus Minus Multiplies Divides BitwiseSum BitwiseProduct BitwiseNegate LogicalNegate OpenPar ClosePar Return If Else While
 %token <val> IntNumber IntHexNum StringVar RealNumber BoolValue Ident Int Double Bool
 
 %type <val> typename

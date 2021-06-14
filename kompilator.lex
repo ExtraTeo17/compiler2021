@@ -4,7 +4,7 @@
 IntNumber   0|[1-9][0-9]*
 IntHexNum	0[x|X][A-Fa-f0-9]*
 StringVar	\"(\\.|[^"\\\n])*\"
-Comment		\/\/[^\n]*
+Comment		\/\/[^\n]*\n
 BoolValue	true|false
 RealNumber	(0|[1-9][0-9]*)\.[0-9]+
 Ident		[A-Za-z][A-Za-z0-9]*
@@ -51,9 +51,9 @@ Ident		[A-Za-z][A-Za-z0-9]*
 {Ident}			{ yylval.val=yytext; return (int)Tokens.Ident; }
 {Comment}		{ }
 " "				{ }
-"\r"			{ }
+"\r"			{ Compiler.NextLine(); }
 "\t"			{ }
 ";"				{ return (int)Tokens.Semicolon; }
 ","				{ return (int)Tokens.Comma; }
 <<EOF>>			{ return (int)Tokens.Eof; }
-.				{ return (int)Tokens.Error; }
+.				{ Compiler.HandleLexicalError(yytext); }

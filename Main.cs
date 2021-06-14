@@ -3,10 +3,12 @@ using System.IO;
 using System.Collections.Generic;
 using GardensPoint;
 using System.Text;
+using System.Text.RegularExpressions;
 
 public class Compiler
 {
     public static int errors = 0;
+    private static int lineno = 1;
 
     public static SyntaxTree syntaxTree;
     public static Dictionary<string, SyntaxTree> symbolTable;
@@ -57,18 +59,27 @@ public class Compiler
         parser.Parse();
         source.Close();
 
-        syntaxTree.CheckType();
+        if (syntaxTree == null)
+        {
+            ++errors;
+            Console.WriteLine("Compilation error");
+        }
+        else
+        {
+            syntaxTree.CheckType();
+        }
 
         if (errors > 0)
         {
-            Console.WriteLine($"\n {errors} errors detected\n");
+            Console.WriteLine("==========================================");
+            Console.WriteLine($"Compilation failed -- {errors} errors detected :(");
         }
         else
         {
             writer = new StreamWriter(file + ".ll");
             GenCode();
             writer.Close();
-            Console.WriteLine("Compilation successful!");
+            Console.WriteLine("Compilation successful! :)");
         }
 
         return errors == 0 ? 0 : 3;
@@ -93,7 +104,7 @@ public class Compiler
         EmitCode("{");
         EmitCode($"{GetCurrentLabelName()}:");
 
-        Console.WriteLine(syntaxTree);
+        //Console.WriteLine("\n" + syntaxTree);
 
         syntaxTree.GenCode();
         EmitCode("}");
@@ -102,6 +113,22 @@ public class Compiler
     public static void EmitCode(string instr = null)
     {
         writer.WriteLine(instr);
+    }
+
+    public static void HandleLexicalError(string symbol)
+    {
+        ++errors;
+        PrintError("Lexical error", lineno, "unexpected symbol " + Regex.Unescape(symbol));
+    }
+
+    private static void PrintError(string errorType, int lineNum, string errorContent)
+    {
+        Console.WriteLine(errorType + ": line " + lineNum + " -- " + errorContent);
+    }
+
+    public static void NextLine()
+    {
+        lineno++;
     }
 
     public static StringInfo AddString(string stringValue)
