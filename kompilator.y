@@ -29,6 +29,7 @@ program				: Program OpenBracket declarations instructions CloseBracket Eof
 					| Program OpenBracket declarations instructions Eof
 					{
 						Compiler.HandleSyntaxError("Unexpected end of file");
+						YYABORT;
 					}
 					;
 
@@ -140,6 +141,11 @@ block_instruction	: OpenBracket instructions CloseBracket
 					| OpenBracket error CloseBracket
 					{
 						Compiler.HandleSyntaxError();
+					}
+					| OpenBracket instructions Eof
+					{
+						Compiler.HandleSyntaxError("Unexpected end of file");
+						YYABORT;
 					}
 					;
 
