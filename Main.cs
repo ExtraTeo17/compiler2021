@@ -1014,9 +1014,19 @@ class BitwiseSumOperation : BinaryOperation
 {
     public BitwiseSumOperation(SyntaxTree exp1, SyntaxTree exp2) : base(exp1, exp2) { }
 
-    public override string CheckType() // TODO: only int
+    public override string CheckType()
     {
-        typename = "i32";
+        firstExpression.CheckType();
+        secondExpression.CheckType();
+        if (firstExpression.typename == "i32" && secondExpression.typename == "i32")
+        {
+            typename = "i32";
+        }
+        else
+        {
+            Compiler.HandleSemanticError(line, "cannot perform bitwise sum on types: " + Compiler.DisplayType(firstExpression.typename)
+                + ", " + Compiler.DisplayType(secondExpression.typename));
+        }
         return typename;
     }
 
@@ -1036,7 +1046,17 @@ class BitwiseProductOperation : BinaryOperation
 
     public override string CheckType() // TODO: only int
     {
-        typename = "i32";
+        firstExpression.CheckType();
+        secondExpression.CheckType();
+        if (firstExpression.typename == "i32" && secondExpression.typename == "i32")
+        {
+            typename = "i32";
+        }
+        else
+        {
+            Compiler.HandleSemanticError(line, "cannot perform bitwise product on types: " + Compiler.DisplayType(firstExpression.typename)
+                + ", " + Compiler.DisplayType(secondExpression.typename));
+        }
         return typename;
     }
 
