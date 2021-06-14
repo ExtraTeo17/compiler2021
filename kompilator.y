@@ -28,9 +28,12 @@ program				: Program OpenBracket declarations instructions CloseBracket Eof
 					}
 					| Program OpenBracket declarations instructions Eof
 					{
-						Compiler.syntaxTree = new Program($3, $4);
 						Compiler.HandleSyntaxError("unexpected end of file");
 						YYABORT;
+					}
+					| Program error
+					{
+						Compiler.HandleSyntaxError();
 					}
 					;
 
@@ -101,6 +104,10 @@ instruction			: write_instruction { }
 					{
 						Compiler.HandleSyntaxError();
 					}
+					| error
+					{
+						Compiler.HandleSyntaxError();
+					}
 					;
 
 read_instruction	: Read ident Semicolon
@@ -142,12 +149,6 @@ block_instruction	: OpenBracket instructions CloseBracket
 					| OpenBracket error CloseBracket
 					{
 						Compiler.HandleSyntaxError();
-					}
-					| OpenBracket instructions Eof
-					{
-						$$ = new BlockInstruction($2);
-						Compiler.HandleSyntaxError("unexpected end of file");
-						YYABORT;
 					}
 					;
 

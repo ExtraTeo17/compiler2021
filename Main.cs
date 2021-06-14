@@ -61,7 +61,7 @@ public class Compiler
         {*/
             parser.Parse();
             source.Close();
-            syntaxTree.CheckType();
+            syntaxTree?.CheckType();
         /*}
         catch (Exception e)
         {
