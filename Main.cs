@@ -940,6 +940,49 @@ class ReturnInstruction : SyntaxTree
     }
 }
 
+class ConditionalInstruction : SyntaxTree
+{
+    private SyntaxTree condition;
+    private SyntaxTree ifInstruction;
+    private SyntaxTree elseInstruction;
+
+    public ConditionalInstruction(SyntaxTree cond, SyntaxTree ifInstr, SyntaxTree elseInstr = null)
+    {
+        condition = cond;
+        ifInstruction = ifInstr;
+        elseInstruction = elseInstr;
+    }
+
+    public override string CheckType()
+    {
+        condition.CheckType();
+        ifInstruction.CheckType();
+        if (elseInstruction != null)
+            elseInstruction.CheckType();
+        return null;
+    }
+
+    public override string GenCode()
+    {
+        string conditionResult = condition.GenCode();
+        string labelTrue = Compiler.GetNextLabelName();
+        string labelFalse = Compiler.GetNextLabelName();
+        string labelEnd = Compiler.GetNextLabelName();
+        Compiler.EmitCode($"br i1 {conditionResult}, label %{labelTrue}, label %{labelFalse}");
+        Compiler.EmitCode($"{labelTrue}:");
+        ifInstruction.GenCode();
+        Compiler.EmitCode($"br label %{labelEnd}");
+        Compiler.EmitCode($"{labelFalse}:");
+        if (elseInstruction != null)
+        {
+            elseInstruction.GenCode();
+        }
+        Compiler.EmitCode($"br label %{labelEnd}");
+        Compiler.EmitCode($"{labelEnd}:");
+        return null;
+    }
+}
+
 class HexWriteInstruction : SyntaxTree
 {
     private SyntaxTree expression;
