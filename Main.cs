@@ -1029,7 +1029,8 @@ class HexWriteInstruction : SyntaxTree
 
     public override string CheckType()
     {
-        return null;
+        typename = expression.CheckType();
+        return typename;
     }
 
     public override string GenCode()
