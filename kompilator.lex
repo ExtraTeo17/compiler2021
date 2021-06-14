@@ -1,10 +1,11 @@
 %using QUT.Gppg;
 %namespace GardensPoint
 
-IntNumber   [0-9]+
+IntNumber   0|[1-9][0-9]*
+IntHexNum	0[x|X][A-Fa-f0-9]*
 StringVar	\"(\\.|[^"\\])*\"
 BoolValue	true|false
-RealNumber	[0-9]+\.[0-9]+
+RealNumber	(0|[1-9][0-9]*)\.[0-9]+
 Ident		[A-Za-z][A-Za-z0-9]*
 
 %%
@@ -12,6 +13,7 @@ Ident		[A-Za-z][A-Za-z0-9]*
 "program"		{ return (int)Tokens.Program; }
 "{"				{ return (int)Tokens.OpenBracket; }
 "}"				{ return (int)Tokens.CloseBracket; }
+"read"			{ return (int)Tokens.Read; }
 "write"			{ return (int)Tokens.Write; }
 "hex"			{ return (int)Tokens.Hex; }
 "return"		{ return (int)Tokens.Return; }
@@ -42,6 +44,7 @@ Ident		[A-Za-z][A-Za-z0-9]*
 "bool"			{ yylval.val=yytext; return (int)Tokens.Bool; }
 {BoolValue}		{ yylval.val=yytext; return (int)Tokens.BoolValue; }
 {IntNumber}		{ yylval.val=yytext; return (int)Tokens.IntNumber; }
+{IntHexNum}		{ yylval.val=yytext; return (int)Tokens.IntHexNum; }
 {StringVar}		{ yylval.val=yytext; return (int)Tokens.StringVar; }
 {RealNumber}	{ yylval.val=yytext; return (int)Tokens.RealNumber; }
 {Ident}			{ yylval.val=yytext; return (int)Tokens.Ident; }

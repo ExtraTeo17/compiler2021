@@ -86,6 +86,7 @@ public class Compiler
             EmitCode($"@{info.stringVarName} = constant [{info.stringLength + 1} x i8] c\"{info.stringValue}\\00\"");
         }
         EmitCode("declare i32 @printf(i8*, ...)");
+        EmitCode("declare i32 @scanf_s(i8*, ...)");
         EmitCode();
         EmitCode("define i32 @main()");
         EmitCode("{");
@@ -1032,6 +1033,47 @@ class HexWriteInstruction : SyntaxTree
         string value = expression.GenCode();
         Compiler.EmitCode($"call i32 (i8*, ...) @printf(i8* bitcast ([5 x i8]* @hex_int_print to i8*), i32 {value})");
         return null;
+    }
+}
+
+class ReadInstruction : SyntaxTree
+{
+    private string identName;
+
+    public ReadInstruction(string ident)
+    {
+        identName = ident;
+    }
+
+    public override string CheckType()
+    {
+        return null;
+    }
+
+    public override string GenCode()
+    {
+        Compiler.EmitCode($"call i32 (i8*, ...) @scanf_s(i8* bitcast ([3 x i8]* @int_print to i8*), i32* %var_{identName})");
+        return null;
+    }
+}
+
+class HexReadInstruction : SyntaxTree
+{
+    private string identName;
+
+    public HexReadInstruction(string ident)
+    {
+        identName = ident;
+    }
+
+    public override string CheckType()
+    {
+        return null;
+    }
+
+    public override string GenCode()
+    {
+        throw new NotImplementedException();
     }
 }
 
