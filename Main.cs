@@ -632,7 +632,21 @@ class ConvertToDoubleOperation : UnaryOperation
 
     public override string GenCode()
     {
-        throw new NotImplementedException();
+        string value = expression.GenCode();
+        if (expression.typename == "double")
+        {
+            return value;
+        }
+        else if (expression.typename == "i32")
+        {
+            string reg1 = Compiler.GetNextRegisterName();
+            Compiler.EmitCode($"{reg1} = sitofp i32 {value} to double");
+            return reg1;
+        }
+        else
+        {
+            throw new Exception("Unknown type: " + expression.typename);
+        }
     }
 }
 
