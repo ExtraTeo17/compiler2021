@@ -855,10 +855,19 @@ class EqualsOperation : BinaryOperation
 {
     public EqualsOperation(SyntaxTree exp1, SyntaxTree exp2) : base(exp1, exp2) { }
 
-    public override string CheckType() // TODO: implement full proper semantic type checking in the entire project
+    public override string CheckType()
     {
         firstExpression.CheckType();
         secondExpression.CheckType();
+        if (!((firstExpression.typename == "i32" && secondExpression.typename == "i32")
+            || (firstExpression.typename == "double" && secondExpression.typename == "i32")
+            || (firstExpression.typename == "i32" && secondExpression.typename == "double")
+            || (firstExpression.typename == "double" && secondExpression.typename == "double")
+            || (firstExpression.typename == "i1" && secondExpression.typename == "i1")))
+        {
+            Compiler.HandleSemanticError(line, "cannot perform '==' on types: "
+                + Compiler.DisplayType(firstExpression.typename) + ", " + Compiler.DisplayType(secondExpression.typename));
+        }
         typename = "i1";
         return typename;
     }
@@ -867,9 +876,35 @@ class EqualsOperation : BinaryOperation
     {
         string val1 = firstExpression.GenCode();
         string val2 = secondExpression.GenCode();
-        string reg = Compiler.GetNextRegisterName();
-        Compiler.EmitCode($"{reg} = icmp eq {firstExpression.typename} {val1}, {val2}");
-        return reg;
+        if ((firstExpression.typename == "i32" && secondExpression.typename == "i32")
+            || (firstExpression.typename == "i1" && secondExpression.typename == "i1"))
+        {
+            string reg = Compiler.GetNextRegisterName();
+            Compiler.EmitCode($"{reg} = icmp eq {firstExpression.typename} {val1}, {val2}");
+            return reg;
+        }
+        else if (firstExpression.typename == "double" && secondExpression.typename == "i32")
+        {
+            string reg1 = Compiler.GetNextRegisterName();
+            Compiler.EmitCode($"{reg1} = sitofp i32 {val2} to double");
+            string reg2 = Compiler.GetNextRegisterName();
+            Compiler.EmitCode($"{reg2} = fcmp oeq double {val1}, {reg1}");
+            return reg2;
+        }
+        else if (firstExpression.typename == "i32" && secondExpression.typename == "double")
+        {
+            string reg1 = Compiler.GetNextRegisterName();
+            Compiler.EmitCode($"{reg1} = sitofp i32 {val1} to double");
+            string reg2 = Compiler.GetNextRegisterName();
+            Compiler.EmitCode($"{reg2} = fcmp oeq double {reg1}, {val2}");
+            return reg2;
+        }
+        else
+        {
+            string reg = Compiler.GetNextRegisterName();
+            Compiler.EmitCode($"{reg} = fcmp oeq double {val1}, {val2}");
+            return reg;
+        }
     }
 }
 
@@ -881,6 +916,15 @@ class NotEqualsOperation : BinaryOperation
     {
         firstExpression.CheckType();
         secondExpression.CheckType();
+        if (!((firstExpression.typename == "i32" && secondExpression.typename == "i32")
+            || (firstExpression.typename == "double" && secondExpression.typename == "i32")
+            || (firstExpression.typename == "i32" && secondExpression.typename == "double")
+            || (firstExpression.typename == "double" && secondExpression.typename == "double")
+            || (firstExpression.typename == "i1" && secondExpression.typename == "i1")))
+        {
+            Compiler.HandleSemanticError(line, "cannot perform '!=' on types: "
+                + Compiler.DisplayType(firstExpression.typename) + ", " + Compiler.DisplayType(secondExpression.typename));
+        }
         typename = "i1";
         return typename;
     }
@@ -889,9 +933,35 @@ class NotEqualsOperation : BinaryOperation
     {
         string val1 = firstExpression.GenCode();
         string val2 = secondExpression.GenCode();
-        string reg = Compiler.GetNextRegisterName();
-        Compiler.EmitCode($"{reg} = icmp ne {firstExpression.typename} {val1}, {val2}");
-        return reg;
+        if ((firstExpression.typename == "i32" && secondExpression.typename == "i32")
+            || (firstExpression.typename == "i1" && secondExpression.typename == "i1"))
+        {
+            string reg = Compiler.GetNextRegisterName();
+            Compiler.EmitCode($"{reg} = icmp ne {firstExpression.typename} {val1}, {val2}");
+            return reg;
+        }
+        else if (firstExpression.typename == "double" && secondExpression.typename == "i32")
+        {
+            string reg1 = Compiler.GetNextRegisterName();
+            Compiler.EmitCode($"{reg1} = sitofp i32 {val2} to double");
+            string reg2 = Compiler.GetNextRegisterName();
+            Compiler.EmitCode($"{reg2} = fcmp one double {val1}, {reg1}");
+            return reg2;
+        }
+        else if (firstExpression.typename == "i32" && secondExpression.typename == "double")
+        {
+            string reg1 = Compiler.GetNextRegisterName();
+            Compiler.EmitCode($"{reg1} = sitofp i32 {val1} to double");
+            string reg2 = Compiler.GetNextRegisterName();
+            Compiler.EmitCode($"{reg2} = fcmp one double {reg1}, {val2}");
+            return reg2;
+        }
+        else
+        {
+            string reg = Compiler.GetNextRegisterName();
+            Compiler.EmitCode($"{reg} = fcmp one double {val1}, {val2}");
+            return reg;
+        }
     }
 }
 
@@ -903,6 +973,14 @@ class GreaterThanOperation : BinaryOperation
     {
         firstExpression.CheckType();
         secondExpression.CheckType();
+        if (!((firstExpression.typename == "i32" && secondExpression.typename == "i32")
+            || (firstExpression.typename == "double" && secondExpression.typename == "i32")
+            || (firstExpression.typename == "i32" && secondExpression.typename == "double")
+            || (firstExpression.typename == "double" && secondExpression.typename == "double")))
+        {
+            Compiler.HandleSemanticError(line, "cannot perform '>' on types: "
+                + Compiler.DisplayType(firstExpression.typename) + ", " + Compiler.DisplayType(secondExpression.typename));
+        }
         typename = "i1";
         return typename;
     }
@@ -911,9 +989,34 @@ class GreaterThanOperation : BinaryOperation
     {
         string val1 = firstExpression.GenCode();
         string val2 = secondExpression.GenCode();
-        string reg = Compiler.GetNextRegisterName();
-        Compiler.EmitCode($"{reg} = icmp sgt {firstExpression.typename} {val1}, {val2}");
-        return reg;
+        if (firstExpression.typename == "i32" && secondExpression.typename == "i32")
+        {
+            string reg = Compiler.GetNextRegisterName();
+            Compiler.EmitCode($"{reg} = icmp sgt {firstExpression.typename} {val1}, {val2}");
+            return reg;
+        }
+        else if (firstExpression.typename == "double" && secondExpression.typename == "i32")
+        {
+            string reg1 = Compiler.GetNextRegisterName();
+            Compiler.EmitCode($"{reg1} = sitofp i32 {val2} to double");
+            string reg2 = Compiler.GetNextRegisterName();
+            Compiler.EmitCode($"{reg2} = fcmp ogt double {val1}, {reg1}");
+            return reg2;
+        }
+        else if (firstExpression.typename == "i32" && secondExpression.typename == "double")
+        {
+            string reg1 = Compiler.GetNextRegisterName();
+            Compiler.EmitCode($"{reg1} = sitofp i32 {val1} to double");
+            string reg2 = Compiler.GetNextRegisterName();
+            Compiler.EmitCode($"{reg2} = fcmp ogt double {reg1}, {val2}");
+            return reg2;
+        }
+        else
+        {
+            string reg = Compiler.GetNextRegisterName();
+            Compiler.EmitCode($"{reg} = fcmp ogt double {val1}, {val2}");
+            return reg;
+        }
     }
 }
 
@@ -925,6 +1028,14 @@ class GreaterOrEqualOperation : BinaryOperation
     {
         firstExpression.CheckType();
         secondExpression.CheckType();
+        if (!((firstExpression.typename == "i32" && secondExpression.typename == "i32")
+            || (firstExpression.typename == "double" && secondExpression.typename == "i32")
+            || (firstExpression.typename == "i32" && secondExpression.typename == "double")
+            || (firstExpression.typename == "double" && secondExpression.typename == "double")))
+        {
+            Compiler.HandleSemanticError(line, "cannot perform '>=' on types: "
+                + Compiler.DisplayType(firstExpression.typename) + ", " + Compiler.DisplayType(secondExpression.typename));
+        }
         typename = "i1";
         return typename;
     }
@@ -933,9 +1044,34 @@ class GreaterOrEqualOperation : BinaryOperation
     {
         string val1 = firstExpression.GenCode();
         string val2 = secondExpression.GenCode();
-        string reg = Compiler.GetNextRegisterName();
-        Compiler.EmitCode($"{reg} = icmp sge {firstExpression.typename} {val1}, {val2}");
-        return reg;
+        if (firstExpression.typename == "i32" && secondExpression.typename == "i32")
+        {
+            string reg = Compiler.GetNextRegisterName();
+            Compiler.EmitCode($"{reg} = icmp sge {firstExpression.typename} {val1}, {val2}");
+            return reg;
+        }
+        else if (firstExpression.typename == "double" && secondExpression.typename == "i32")
+        {
+            string reg1 = Compiler.GetNextRegisterName();
+            Compiler.EmitCode($"{reg1} = sitofp i32 {val2} to double");
+            string reg2 = Compiler.GetNextRegisterName();
+            Compiler.EmitCode($"{reg2} = fcmp oge double {val1}, {reg1}");
+            return reg2;
+        }
+        else if (firstExpression.typename == "i32" && secondExpression.typename == "double")
+        {
+            string reg1 = Compiler.GetNextRegisterName();
+            Compiler.EmitCode($"{reg1} = sitofp i32 {val1} to double");
+            string reg2 = Compiler.GetNextRegisterName();
+            Compiler.EmitCode($"{reg2} = fcmp oge double {reg1}, {val2}");
+            return reg2;
+        }
+        else
+        {
+            string reg = Compiler.GetNextRegisterName();
+            Compiler.EmitCode($"{reg} = fcmp oge double {val1}, {val2}");
+            return reg;
+        }
     }
 }
 
@@ -947,6 +1083,14 @@ class LessThanOperation : BinaryOperation
     {
         firstExpression.CheckType();
         secondExpression.CheckType();
+        if (!((firstExpression.typename == "i32" && secondExpression.typename == "i32")
+            || (firstExpression.typename == "double" && secondExpression.typename == "i32")
+            || (firstExpression.typename == "i32" && secondExpression.typename == "double")
+            || (firstExpression.typename == "double" && secondExpression.typename == "double")))
+        {
+            Compiler.HandleSemanticError(line, "cannot perform '<' on types: "
+                + Compiler.DisplayType(firstExpression.typename) + ", " + Compiler.DisplayType(secondExpression.typename));
+        }
         typename = "i1";
         return typename;
     }
@@ -955,9 +1099,34 @@ class LessThanOperation : BinaryOperation
     {
         string val1 = firstExpression.GenCode();
         string val2 = secondExpression.GenCode();
-        string reg = Compiler.GetNextRegisterName();
-        Compiler.EmitCode($"{reg} = icmp slt {firstExpression.typename} {val1}, {val2}");
-        return reg;
+        if (firstExpression.typename == "i32" && secondExpression.typename == "i32")
+        {
+            string reg = Compiler.GetNextRegisterName();
+            Compiler.EmitCode($"{reg} = icmp slt {firstExpression.typename} {val1}, {val2}");
+            return reg;
+        }
+        else if (firstExpression.typename == "double" && secondExpression.typename == "i32")
+        {
+            string reg1 = Compiler.GetNextRegisterName();
+            Compiler.EmitCode($"{reg1} = sitofp i32 {val2} to double");
+            string reg2 = Compiler.GetNextRegisterName();
+            Compiler.EmitCode($"{reg2} = fcmp olt double {val1}, {reg1}");
+            return reg2;
+        }
+        else if (firstExpression.typename == "i32" && secondExpression.typename == "double")
+        {
+            string reg1 = Compiler.GetNextRegisterName();
+            Compiler.EmitCode($"{reg1} = sitofp i32 {val1} to double");
+            string reg2 = Compiler.GetNextRegisterName();
+            Compiler.EmitCode($"{reg2} = fcmp olt double {reg1}, {val2}");
+            return reg2;
+        }
+        else
+        {
+            string reg = Compiler.GetNextRegisterName();
+            Compiler.EmitCode($"{reg} = fcmp olt double {val1}, {val2}");
+            return reg;
+        }
     }
 }
 
@@ -969,6 +1138,14 @@ class LessOrEqualOperation : BinaryOperation
     {
         firstExpression.CheckType();
         secondExpression.CheckType();
+        if (!((firstExpression.typename == "i32" && secondExpression.typename == "i32")
+            || (firstExpression.typename == "double" && secondExpression.typename == "i32")
+            || (firstExpression.typename == "i32" && secondExpression.typename == "double")
+            || (firstExpression.typename == "double" && secondExpression.typename == "double")))
+        {
+            Compiler.HandleSemanticError(line, "cannot perform '<=' on types: "
+                + Compiler.DisplayType(firstExpression.typename) + ", " + Compiler.DisplayType(secondExpression.typename));
+        }
         typename = "i1";
         return typename;
     }
@@ -977,9 +1154,34 @@ class LessOrEqualOperation : BinaryOperation
     {
         string val1 = firstExpression.GenCode();
         string val2 = secondExpression.GenCode();
-        string reg = Compiler.GetNextRegisterName();
-        Compiler.EmitCode($"{reg} = icmp sle {firstExpression.typename} {val1}, {val2}");
-        return reg;
+        if (firstExpression.typename == "i32" && secondExpression.typename == "i32")
+        {
+            string reg = Compiler.GetNextRegisterName();
+            Compiler.EmitCode($"{reg} = icmp sle {firstExpression.typename} {val1}, {val2}");
+            return reg;
+        }
+        else if (firstExpression.typename == "double" && secondExpression.typename == "i32")
+        {
+            string reg1 = Compiler.GetNextRegisterName();
+            Compiler.EmitCode($"{reg1} = sitofp i32 {val2} to double");
+            string reg2 = Compiler.GetNextRegisterName();
+            Compiler.EmitCode($"{reg2} = fcmp ole double {val1}, {reg1}");
+            return reg2;
+        }
+        else if (firstExpression.typename == "i32" && secondExpression.typename == "double")
+        {
+            string reg1 = Compiler.GetNextRegisterName();
+            Compiler.EmitCode($"{reg1} = sitofp i32 {val1} to double");
+            string reg2 = Compiler.GetNextRegisterName();
+            Compiler.EmitCode($"{reg2} = fcmp ole double {reg1}, {val2}");
+            return reg2;
+        }
+        else
+        {
+            string reg = Compiler.GetNextRegisterName();
+            Compiler.EmitCode($"{reg} = fcmp ole double {val1}, {val2}");
+            return reg;
+        }
     }
 }
 
