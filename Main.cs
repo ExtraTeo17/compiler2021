@@ -124,6 +124,11 @@ public class Compiler
         PrintError("Syntax error", lineno.ToString());
     }
 
+    public static void HandleSyntaxError(string content)
+    {
+        PrintError("Syntax error", lineno.ToString(), content);
+    }
+
     private static void PrintError(string errorType, string lineNum = null, string errorContent = null)
     {
         ++errors;
