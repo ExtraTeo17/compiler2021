@@ -1162,11 +1162,20 @@ class ReadInstruction : SyntaxTree
     public ReadInstruction(SyntaxTree ident)
     {
         identifier = ident;
+        line = Compiler.CurrentLine();
     }
 
-    public override string CheckType() // TODO: INT OR DOUBLE, CHECK HERE PLS!!!
+    public override string CheckType()
     {
-        typename = identifier.CheckType();
+        identifier.CheckType();
+        if (identifier.typename == "i32" || identifier.typename == "double")
+        {
+            typename = identifier.typename;
+        }
+        else
+        {
+            Compiler.HandleSemanticError(line, "cannot perform read instruction on type: " + (identifier.typename == "i1" ? "bool" : identifier.typename));
+        }
         return typename;
     }
 
@@ -1198,11 +1207,20 @@ class HexReadInstruction : SyntaxTree
     public HexReadInstruction(SyntaxTree ident)
     {
         identifier = ident;
+        line = Compiler.CurrentLine();
     }
 
     public override string CheckType()
     {
-        typename = "i32";
+        identifier.CheckType();
+        if (identifier.typename == "i32")
+        {
+            typename = identifier.typename;
+        }
+        else
+        {
+            Compiler.HandleSemanticError(line, "cannot perform hex read instruction on type: " + (identifier.typename == "i1" ? "bool" : identifier.typename));
+        }
         return typename;
     }
 
