@@ -562,17 +562,11 @@ class AssignOperation : BinaryOperation
     {
         string secondExpValue = secondExpression.GenCode();
         string secondExpTypename = secondExpression.typename;
-        if (secondExpValue.StartsWith("%var_"))
-        {
-            string varName = secondExpValue;
-            secondExpValue = Compiler.GetNextRegisterName();
-            Compiler.EmitCode($"{secondExpValue} = load {secondExpTypename}, {secondExpTypename}* {varName}");
-        }
         Identifier ident = firstExpression as Identifier;
         string firstExpValue = "%var_" + ident.name;
         string firstExpTypename = firstExpression.typename;
         Compiler.EmitCode($"store {secondExpTypename} {secondExpValue}, {firstExpTypename}* {firstExpValue}");
-        return firstExpValue;
+        return secondExpValue;
     }
 }
 
