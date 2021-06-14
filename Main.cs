@@ -504,6 +504,12 @@ abstract class UnaryOperation : SyntaxTree
     {
         expression = exp;
     }
+
+    public UnaryOperation(SyntaxTree exp, int lineNum)
+    {
+        expression = exp;
+        line = lineNum;
+    }
 }
 
 class UnaryMinusOperation : UnaryOperation
@@ -571,7 +577,9 @@ class ConvertToIntOperation : UnaryOperation
 
     public override string CheckType()
     {
-        throw new NotImplementedException();
+        expression.CheckType();
+        typename = "i32";
+        return typename;
     }
 
     public override string GenCode()
@@ -582,11 +590,24 @@ class ConvertToIntOperation : UnaryOperation
 
 class ConvertToDoubleOperation : UnaryOperation
 {
-    public ConvertToDoubleOperation(SyntaxTree exp) : base(exp) { }
+    public ConvertToDoubleOperation(SyntaxTree exp) : base(exp, Compiler.CurrentLine()) { }
 
     public override string CheckType()
     {
-        throw new NotImplementedException();
+        expression.CheckType();
+        if (expression.typename == "i32" || expression.typename == "double")
+        {
+            typename = "double";
+        }
+        else if (expression.typename == "i1")
+        {
+            Compiler.HandleSemanticError(line, "Cannot convert from bool to double");
+        }
+        else
+        {
+            throw new Exception("Unknown type: " + expression.typename);
+        }
+        return typename;
     }
 
     public override string GenCode()
