@@ -77,6 +77,7 @@ public class Compiler
     private static void GenCode()
     {
         EmitCode("@int_print = constant [3 x i8] c\"%d\\00\"");
+        EmitCode("@hex_int_scan = constant [3 x i8] c\"%X\\00\"");
         EmitCode("@hex_int_print = constant [5 x i8] c\"0X%X\\00\"");
         EmitCode("@double_print = constant [4 x i8] c\"%lf\\00\"");
         EmitCode("@bool_print_true = constant [5 x i8] c\"True\\00\"");
@@ -1089,7 +1090,14 @@ class HexReadInstruction : SyntaxTree
 
     public override string GenCode()
     {
-        throw new NotImplementedException();
+        Identifier ident = identifier as Identifier;
+
+        if (typename == "i32")
+        {
+            Compiler.EmitCode($"call i32 (i8*, ...) @scanf_s(i8* bitcast ([3 x i8]* @hex_int_scan to i8*), {typename}* %var_{ident.name})");
+        }
+
+        return null;
     }
 }
 
