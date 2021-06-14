@@ -22,19 +22,6 @@ program				: Program OpenBracket declarations instructions CloseBracket Eof
 					{
 						Compiler.syntaxTree = new Program($3, $4);
 					}
-					| Program OpenBracket error CloseBracket Eof
-					{
-						Compiler.HandleSyntaxError();
-					}
-					| Program OpenBracket declarations instructions Eof
-					{
-						Compiler.HandleSyntaxError("unexpected end of file");
-						YYABORT;
-					}
-					| Program error
-					{
-						Compiler.HandleSyntaxError();
-					}
 					;
 
 declarations		: declarations declaration
@@ -56,11 +43,6 @@ declaration			: typename identifiers Semicolon
 							declarations.Add(declaration);
 						}
 						$$ = declarations;
-					}
-					| error Semicolon
-					{
-						Compiler.HandleSyntaxError();
-						$$ = new List<SyntaxTree>();
 					}
 					;
 					
@@ -100,14 +82,6 @@ instruction			: write_instruction { }
 					| block_instruction { }
 					| if_else_instruction { }
 					| loop_instruction { }
-					| error Semicolon
-					{
-						Compiler.HandleSyntaxError();
-					}
-					| error
-					{
-						Compiler.HandleSyntaxError();
-					}
 					;
 
 read_instruction	: Read ident Semicolon
@@ -145,10 +119,6 @@ return_instruction	: Return Semicolon
 block_instruction	: OpenBracket instructions CloseBracket
 					{
 						$$ = new BlockInstruction($2);
-					}
-					| OpenBracket error CloseBracket
-					{
-						Compiler.HandleSyntaxError();
 					}
 					;
 

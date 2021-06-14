@@ -30,6 +30,7 @@ parser.cs
 foo.ll
 clang_for_c.bat
 clang_for_llvm.bat
+MT_testy-master
 
 # Build results
 [Dd]ebug/

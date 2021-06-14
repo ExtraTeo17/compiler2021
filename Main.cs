@@ -57,16 +57,16 @@ public class Compiler
         Parser parser = new Parser(scanner);
         Console.WriteLine();
 
-        /*try
-        {*/
+        try
+        {
             parser.Parse();
             source.Close();
-            syntaxTree?.CheckType();
-        /*}
-        catch (Exception e)
+            syntaxTree.CheckType();
+        }
+        catch (Exception)
         {
             PrintError("Compilation error"); // TODO: bring back when ready!!
-        }*/
+        }
 
         if (errors > 0)
         {
@@ -741,7 +741,7 @@ class AssignOperation : BinaryOperation
                     + " to a bool");
                 return null;
             }
-            typename = "bool";
+            typename = "i1";
         }
         else
         {
