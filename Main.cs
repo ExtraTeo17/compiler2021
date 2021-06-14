@@ -736,7 +736,15 @@ class LogicalSumOperation : BinaryOperation
     {
         firstExpression.CheckType();
         secondExpression.CheckType();
-        typename = "i1";
+        if (firstExpression.typename == "i1" && secondExpression.typename == "i1")
+        {
+            typename = "i1";
+        }
+        else
+        {
+            Compiler.HandleSemanticError(line, "cannot perform logical sum on types: " + Compiler.DisplayType(firstExpression.typename)
+                + ", " + Compiler.DisplayType(secondExpression.typename));
+        }
         return typename;
     }
 
@@ -769,7 +777,15 @@ class LogicalProductOperation : BinaryOperation
     {
         firstExpression.CheckType();
         secondExpression.CheckType();
-        typename = "i1";
+        if (firstExpression.typename == "i1" && secondExpression.typename == "i1")
+        {
+            typename = "i1";
+        }
+        else
+        {
+            Compiler.HandleSemanticError(line, "cannot perform logical sum on types: " + Compiler.DisplayType(firstExpression.typename)
+                + ", " + Compiler.DisplayType(secondExpression.typename));
+        }
         return typename;
     }
 
