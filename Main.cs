@@ -281,6 +281,8 @@ public abstract class SyntaxTree
     public abstract string CheckType();
     public abstract string GenCode();
 
+    public SyntaxTree() { line = Compiler.CurrentLine(); }
+
     public override string ToString()
     {
         return $"{base.ToString()} extends SyntaxTree: [typename: {typename}]";
@@ -1067,7 +1069,10 @@ class LoopInstruction : SyntaxTree
 
     public override string CheckType()
     {
-        condition.CheckType();
+        if (condition.CheckType() != "i1")
+        {
+            Compiler.HandleSemanticError(condition.line, "condition for 'while' instruction has to be of bool type instead of type: " + (condition.typename == "i32" ? "int" : condition.typename));
+        }
         instruction.CheckType();
         return null;
     }
@@ -1104,7 +1109,10 @@ class ConditionalInstruction : SyntaxTree
 
     public override string CheckType()
     {
-        condition.CheckType();
+        if (condition.CheckType() != "i1")
+        {
+            Compiler.HandleSemanticError(condition.line, "condition for 'if' instruction has to be of bool type instead of type: " + (condition.typename == "i32" ? "int" : condition.typename));
+        }
         ifInstruction.CheckType();
         if (elseInstruction != null)
             elseInstruction.CheckType();
