@@ -3,7 +3,8 @@
 
 IntNumber   0|[1-9][0-9]*
 IntHexNum	0[x|X][A-Fa-f0-9]*
-StringVar	\"(\\.|[^"\\])*\"
+StringVar	\"(\\.|[^"\\\n])*\"
+Comment		\/\/[^\n]*
 BoolValue	true|false
 RealNumber	(0|[1-9][0-9]*)\.[0-9]+
 Ident		[A-Za-z][A-Za-z0-9]*
@@ -48,6 +49,7 @@ Ident		[A-Za-z][A-Za-z0-9]*
 {StringVar}		{ yylval.val=yytext; return (int)Tokens.StringVar; }
 {RealNumber}	{ yylval.val=yytext; return (int)Tokens.RealNumber; }
 {Ident}			{ yylval.val=yytext; return (int)Tokens.Ident; }
+{Comment}		{ }
 " "				{ }
 "\r"			{ }
 "\t"			{ }
