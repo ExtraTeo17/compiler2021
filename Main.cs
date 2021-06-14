@@ -709,11 +709,45 @@ class AssignOperation : BinaryOperation
 {
     public AssignOperation(SyntaxTree exp1, SyntaxTree exp2) : base(exp1, exp2) { }
 
-    public override string CheckType() // TODO: make sure you can repeat this method everywhere like that
+    public override string CheckType()
     {
-        typename = firstExpression.CheckType();
-        secondExpression.CheckType(); // TODO: calculate typename for AssignOp
-        return firstExpression.typename;
+        firstExpression.CheckType();
+        secondExpression.CheckType();
+        if (firstExpression.typename == "double")
+        {
+            if (secondExpression.typename != "double" && secondExpression.typename != "i32")
+            {
+                Compiler.HandleSemanticError(line, "cannot assign " + Compiler.DisplayType(secondExpression.typename)
+                    + " to a double");
+                return null;
+            }
+            typename = "double";
+        }
+        else if (firstExpression.typename == "i32")
+        {
+            if (secondExpression.typename != "i32")
+            {
+                Compiler.HandleSemanticError(line, "cannot assign " + Compiler.DisplayType(secondExpression.typename)
+                    + " to an int");
+                return null;
+            }
+            typename = "i32";
+        }
+        else if (firstExpression.typename == "i1")
+        {
+            if (secondExpression.typename != "i1")
+            {
+                Compiler.HandleSemanticError(line, "cannot assign " + Compiler.DisplayType(secondExpression.typename)
+                    + " to a bool");
+                return null;
+            }
+            typename = "bool";
+        }
+        else
+        {
+            throw new Exception("Unknown type: " + firstExpression.typename);
+        }
+        return typename;
     }
 
     public override string GenCode()
@@ -723,6 +757,13 @@ class AssignOperation : BinaryOperation
         Identifier ident = firstExpression as Identifier;
         string firstExpValue = "%var_" + ident.name;
         string firstExpTypename = firstExpression.typename;
+        if (secondExpression.typename == "i32" && firstExpression.typename == "double")
+        {
+            string reg1 = Compiler.GetNextRegisterName();
+            Compiler.EmitCode($"{reg1} = sitofp i32 {secondExpValue} to double");
+            secondExpValue = reg1;
+            secondExpTypename = "double";
+        }
         Compiler.EmitCode($"store {secondExpTypename} {secondExpValue}, {firstExpTypename}* {firstExpValue}");
         return secondExpValue;
     }

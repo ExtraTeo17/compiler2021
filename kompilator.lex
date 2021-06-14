@@ -49,7 +49,7 @@ Ident		[A-Za-z][A-Za-z0-9]*
 {StringVar}		{ yylval.val=yytext; return (int)Tokens.StringVar; }
 {RealNumber}	{ yylval.val=yytext; return (int)Tokens.RealNumber; }
 {Ident}			{ yylval.val=yytext; return (int)Tokens.Ident; }
-{Comment}		{ }
+{Comment}		{ Compiler.NextLine(); }
 " "				{ }
 "\r"			{ Compiler.NextLine(); }
 "\t"			{ }
