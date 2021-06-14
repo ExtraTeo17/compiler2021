@@ -8,11 +8,11 @@
 	public List<string> idents;
 }
 
-%token Program OpenBracket CloseBracket Write Semicolon Eof Comma Hex Assign LogicalSum LogicalProduct Equals NotEquals GreaterThan GreaterOrEqual LessThan LessOrEqual Plus Minus Multiplies Divides BitwiseSum BitwiseProduct BitwiseNegate LogicalNegate OpenPar ClosePar Return If Else
+%token Program OpenBracket CloseBracket Write Semicolon Eof Comma Hex Assign LogicalSum LogicalProduct Equals NotEquals GreaterThan GreaterOrEqual LessThan LessOrEqual Plus Minus Multiplies Divides BitwiseSum BitwiseProduct BitwiseNegate LogicalNegate OpenPar ClosePar Return If Else While
 %token <val> IntNumber StringVar RealNumber BoolValue Ident Int Double Bool
 
 %type <val> typename
-%type <syntaxTree> instruction write_instruction if_else_instruction return_instruction block_instruction exp_instruction unary bitwise factor term relation logical assigner exp ident
+%type <syntaxTree> instruction write_instruction loop_instruction if_else_instruction return_instruction block_instruction exp_instruction unary bitwise factor term relation logical assigner exp ident
 %type <syntaxTreeList> declarations declaration instructions
 %type <idents> identifiers
 
@@ -77,6 +77,7 @@ instruction			: write_instruction { }
 					| block_instruction { }
 					| return_instruction { }
 					| if_else_instruction { }
+					| loop_instruction { }
 					;
 
 if_else_instruction	: If OpenPar exp ClosePar instruction
@@ -86,6 +87,12 @@ if_else_instruction	: If OpenPar exp ClosePar instruction
 					| If OpenPar exp ClosePar instruction Else instruction
 					{
 						$$ = new ConditionalInstruction($3, $5, $7);
+					}
+					;
+
+loop_instruction	: While OpenPar exp ClosePar instruction
+					{
+						$$ = new LoopInstruction($3, $5);
 					}
 					;
 

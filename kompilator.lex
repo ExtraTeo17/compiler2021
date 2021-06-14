@@ -17,6 +17,7 @@ Ident		[A-Za-z][A-Za-z0-9]*
 "return"		{ return (int)Tokens.Return; }
 "if"			{ return (int)Tokens.If; }
 "else"			{ return (int)Tokens.Else; }
+"while"			{ return (int)Tokens.While; }
 "="				{ return (int)Tokens.Assign; }
 "||"			{ return (int)Tokens.LogicalSum; }
 "&&"			{ return (int)Tokens.LogicalProduct; }

@@ -588,7 +588,7 @@ class LogicalSumOperation : BinaryOperation
         return typename;
     }
 
-    public override string GenCode()
+    public override string GenCode() // TODO: nie jestem pewien, czy to są obliczenia skrócone (RACZEJ NIE SĄ), bo jest secondexpr.GenCode() -- upewnij się.
     {
         string value1 = firstExpression.GenCode();
         string value2 = secondExpression.GenCode();
@@ -936,6 +936,41 @@ class ReturnInstruction : SyntaxTree
     public override string GenCode()
     {
         Compiler.EmitCode("ret i32 0");
+        return null;
+    }
+}
+
+class LoopInstruction : SyntaxTree
+{
+    private SyntaxTree condition;
+    private SyntaxTree instruction;
+
+    public LoopInstruction(SyntaxTree cond, SyntaxTree instr)
+    {
+        condition = cond;
+        instruction = instr;
+    }
+
+    public override string CheckType()
+    {
+        condition.CheckType();
+        instruction.CheckType();
+        return null;
+    }
+
+    public override string GenCode()
+    {
+        string labelStart = Compiler.GetNextLabelName();
+        string labelInstruction = Compiler.GetNextLabelName();
+        string labelEnd = Compiler.GetNextLabelName();
+        Compiler.EmitCode($"br label %{labelStart}");
+        Compiler.EmitCode($"{labelStart}:");
+        string conditionResult = condition.GenCode();
+        Compiler.EmitCode($"br i1 {conditionResult}, label %{labelInstruction}, label %{labelEnd}");
+        Compiler.EmitCode($"{labelInstruction}:");
+        instruction.GenCode();
+        Compiler.EmitCode($"br label %{labelStart}");
+        Compiler.EmitCode($"{labelEnd}:");
         return null;
     }
 }
