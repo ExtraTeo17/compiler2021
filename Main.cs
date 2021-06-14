@@ -1139,11 +1139,20 @@ class HexWriteInstruction : SyntaxTree
     public HexWriteInstruction(SyntaxTree exp)
     {
         expression = exp;
+        line = Compiler.CurrentLine();
     }
 
     public override string CheckType()
     {
-        typename = expression.CheckType();
+        expression.CheckType();
+        if (expression.typename == "i32")
+        {
+            typename = expression.typename;
+        }
+        else
+        {
+            Compiler.HandleSemanticError(line, "cannot perform hex write instruction on type: " + (expression.typename == "i1" ? "bool" : expression.typename));
+        }
         return typename;
     }
 
