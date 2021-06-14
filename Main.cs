@@ -237,6 +237,7 @@ public class Declaration : SyntaxTree
     public Declaration(string ident, string type)
     {
         identifier = ident;
+        line = Compiler.CurrentLine();
 
         if (type == "int")
         {
@@ -302,7 +303,14 @@ class Program : SyntaxTree
         foreach (var elem in declarations)
         {
             Declaration decl = elem as Declaration;
-            table.Add(decl.identifier, decl);
+            if (table.ContainsKey(decl.identifier))
+            {
+                Compiler.HandleSemanticError(decl.line, "variable already declared: " + decl.identifier);
+            }
+            else
+            {
+                table.Add(decl.identifier, decl);
+            }
         }
         return table;
     }
