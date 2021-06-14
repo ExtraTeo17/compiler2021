@@ -932,8 +932,22 @@ class AdditionOperation : BinaryOperation
 
     public override string CheckType()
     {
-        typename = firstExpression.CheckType();
+        firstExpression.CheckType();
         secondExpression.CheckType();
+        if (firstExpression.typename == "i32" && secondExpression.typename == "i32")
+        {
+            typename = "i32";
+        }
+        else if ((firstExpression.typename != "i32" && firstExpression.typename != "double") ||
+            (secondExpression.typename != "i32" && secondExpression.typename != "double"))
+        {
+            Compiler.HandleSemanticError(line, "cannot perform addition for types: " + Compiler.DisplayType(firstExpression.typename)
+                + ", " + Compiler.DisplayType(secondExpression.typename));
+        }
+        else
+        {
+            typename = "double";
+        }
         return typename;
     }
 
@@ -942,7 +956,26 @@ class AdditionOperation : BinaryOperation
         string val1 = firstExpression.GenCode();
         string val2 = secondExpression.GenCode();
         string reg = Compiler.GetNextRegisterName();
-        Compiler.EmitCode($"{reg} = add {firstExpression.typename} {val1}, {val2}");
+        if (typename == "i32")
+        {
+            Compiler.EmitCode($"{reg} = add i32 {val1}, {val2}");
+        }
+        else
+        {
+            if (firstExpression.typename == "i32")
+            {
+                string reg1 = Compiler.GetNextRegisterName();
+                Compiler.EmitCode($"{reg1} = sitofp i32 {val1} to double");
+                val1 = reg1;
+            }
+            else if (secondExpression.typename == "i32")
+            {
+                string reg2 = Compiler.GetNextRegisterName();
+                Compiler.EmitCode($"{reg2} = sitofp i32 {val2} to double");
+                val2 = reg2;
+            }
+            Compiler.EmitCode($"{reg} = fadd double {val1}, {val2}");
+        }
         return reg;
     }
 }
@@ -953,8 +986,22 @@ class SubstractionOperation : BinaryOperation
 
     public override string CheckType()
     {
-        typename = firstExpression.CheckType();
+        firstExpression.CheckType();
         secondExpression.CheckType();
+        if (firstExpression.typename == "i32" && secondExpression.typename == "i32")
+        {
+            typename = "i32";
+        }
+        else if ((firstExpression.typename != "i32" && firstExpression.typename != "double") ||
+            (secondExpression.typename != "i32" && secondExpression.typename != "double"))
+        {
+            Compiler.HandleSemanticError(line, "cannot perform substraction for types: " + Compiler.DisplayType(firstExpression.typename)
+                + ", " + Compiler.DisplayType(secondExpression.typename));
+        }
+        else
+        {
+            typename = "double";
+        }
         return typename;
     }
 
@@ -963,7 +1010,26 @@ class SubstractionOperation : BinaryOperation
         string val1 = firstExpression.GenCode();
         string val2 = secondExpression.GenCode();
         string reg = Compiler.GetNextRegisterName();
-        Compiler.EmitCode($"{reg} = sub {firstExpression.typename} {val1}, {val2}");
+        if (typename == "i32")
+        {
+            Compiler.EmitCode($"{reg} = sub i32 {val1}, {val2}");
+        }
+        else
+        {
+            if (firstExpression.typename == "i32")
+            {
+                string reg1 = Compiler.GetNextRegisterName();
+                Compiler.EmitCode($"{reg1} = sitofp i32 {val1} to double");
+                val1 = reg1;
+            }
+            else if (secondExpression.typename == "i32")
+            {
+                string reg2 = Compiler.GetNextRegisterName();
+                Compiler.EmitCode($"{reg2} = sitofp i32 {val2} to double");
+                val2 = reg2;
+            }
+            Compiler.EmitCode($"{reg} = fsub double {val1}, {val2}");
+        }
         return reg;
     }
 }
@@ -974,8 +1040,22 @@ class MultiplicationOperation : BinaryOperation
 
     public override string CheckType()
     {
-        typename = firstExpression.CheckType();
+        firstExpression.CheckType();
         secondExpression.CheckType();
+        if (firstExpression.typename == "i32" && secondExpression.typename == "i32")
+        {
+            typename = "i32";
+        }
+        else if ((firstExpression.typename != "i32" && firstExpression.typename != "double") ||
+            (secondExpression.typename != "i32" && secondExpression.typename != "double"))
+        {
+            Compiler.HandleSemanticError(line, "cannot perform multiplication for types: " + Compiler.DisplayType(firstExpression.typename)
+                + ", " + Compiler.DisplayType(secondExpression.typename));
+        }
+        else
+        {
+            typename = "double";
+        }
         return typename;
     }
 
@@ -984,7 +1064,26 @@ class MultiplicationOperation : BinaryOperation
         string val1 = firstExpression.GenCode();
         string val2 = secondExpression.GenCode();
         string reg = Compiler.GetNextRegisterName();
-        Compiler.EmitCode($"{reg} = mul {firstExpression.typename} {val1}, {val2}");
+        if (typename == "i32")
+        {
+            Compiler.EmitCode($"{reg} = mul i32 {val1}, {val2}");
+        }
+        else
+        {
+            if (firstExpression.typename == "i32")
+            {
+                string reg1 = Compiler.GetNextRegisterName();
+                Compiler.EmitCode($"{reg1} = sitofp i32 {val1} to double");
+                val1 = reg1;
+            }
+            else if (secondExpression.typename == "i32")
+            {
+                string reg2 = Compiler.GetNextRegisterName();
+                Compiler.EmitCode($"{reg2} = sitofp i32 {val2} to double");
+                val2 = reg2;
+            }
+            Compiler.EmitCode($"{reg} = fmul double {val1}, {val2}");
+        }
         return reg;
     }
 }
@@ -995,17 +1094,50 @@ class DivisionOperation : BinaryOperation
 
     public override string CheckType()
     {
-        typename = firstExpression.CheckType();
+        firstExpression.CheckType();
         secondExpression.CheckType();
+        if (firstExpression.typename == "i32" && secondExpression.typename == "i32")
+        {
+            typename = "i32";
+        }
+        else if ((firstExpression.typename != "i32" && firstExpression.typename != "double") ||
+            (secondExpression.typename != "i32" && secondExpression.typename != "double"))
+        {
+            Compiler.HandleSemanticError(line, "cannot perform division for types: " + Compiler.DisplayType(firstExpression.typename)
+                + ", " + Compiler.DisplayType(secondExpression.typename));
+        }
+        else
+        {
+            typename = "double";
+        }
         return typename;
     }
 
-    public override string GenCode() // TODO: Fill in with fdiv usage for doubles while type checking implementation
+    public override string GenCode()
     {
         string val1 = firstExpression.GenCode();
         string val2 = secondExpression.GenCode();
         string reg = Compiler.GetNextRegisterName();
-        Compiler.EmitCode($"{reg} = sdiv {firstExpression.typename} {val1}, {val2}");
+        if (typename == "i32")
+        {
+            Compiler.EmitCode($"{reg} = sdiv i32 {val1}, {val2}");
+        }
+        else
+        {
+            if (firstExpression.typename == "i32")
+            {
+                string reg1 = Compiler.GetNextRegisterName();
+                Compiler.EmitCode($"{reg1} = sitofp i32 {val1} to double");
+                val1 = reg1;
+            }
+            else if (secondExpression.typename == "i32")
+            {
+                string reg2 = Compiler.GetNextRegisterName();
+                Compiler.EmitCode($"{reg2} = sitofp i32 {val2} to double");
+                val2 = reg2;
+            }
+            Compiler.EmitCode($"{reg} = fdiv double {val1}, {val2}");
+        }
         return reg;
     }
 }
