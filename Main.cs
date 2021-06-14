@@ -145,6 +145,15 @@ public class Compiler
             Console.WriteLine(errorType);
     }
 
+    public static string DisplayType(string type)
+    {
+        if (type == "i32")
+            return "int";
+        else if (type == "i1")
+            return "bool";
+        return type;
+    }
+
     public static int CurrentLine()
     {
         return lineno;
@@ -520,7 +529,15 @@ class UnaryMinusOperation : UnaryOperation
 
     public override string CheckType()
     {
-        typename = expression.CheckType();
+        expression.CheckType();
+        if (expression.typename == "i32" || expression.typename == "double")
+        {
+            typename = expression.typename;
+        }
+        else
+        {
+            Compiler.HandleSemanticError(line, "cannot perform unary minus on type: " + Compiler.DisplayType(expression.typename));
+        }
         return typename;
     }
 
@@ -528,7 +545,10 @@ class UnaryMinusOperation : UnaryOperation
     {
         string value = expression.GenCode();
         string register = Compiler.GetNextRegisterName();
-        Compiler.EmitCode($"{register} = sub {expression.typename} 0, {value}");
+        if (typename == "i32")
+            Compiler.EmitCode($"{register} = sub {expression.typename} 0, {value}");
+        else
+            Compiler.EmitCode($"{register} = fneg {expression.typename} {value}");
         return register;
     }
 }
@@ -539,7 +559,15 @@ class BitwiseNegateOperation : UnaryOperation
 
     public override string CheckType()
     {
-        typename = expression.CheckType();
+        expression.CheckType();
+        if (expression.typename == "i32")
+        {
+            typename = "i32";
+        }
+        else
+        {
+            Compiler.HandleSemanticError(line, "cannot perform bitwise negate on type: " + Compiler.DisplayType(expression.typename));
+        }
         return typename;
     }
 
@@ -558,7 +586,15 @@ class LogicalNegateOperation : UnaryOperation
 
     public override string CheckType()
     {
-        typename = expression.CheckType();
+        expression.CheckType();
+        if (expression.typename == "i1")
+        {
+            typename = "i1";
+        }
+        else
+        {
+            Compiler.HandleSemanticError(line, "cannot perform logical negate on type: " + Compiler.DisplayType(expression.typename));
+        }
         return typename;
     }
 
