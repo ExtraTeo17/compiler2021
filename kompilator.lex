@@ -56,3 +56,4 @@ Ident		[A-Za-z][A-Za-z0-9]*
 ";"				{ return (int)Tokens.Semicolon; }
 ","				{ return (int)Tokens.Comma; }
 <<EOF>>			{ return (int)Tokens.Eof; }
+.				{ return (int)Tokens.Error; }
