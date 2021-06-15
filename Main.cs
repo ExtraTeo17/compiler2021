@@ -5,6 +5,17 @@ using GardensPoint;
 using System.Text;
 using System.Text.RegularExpressions;
 
+namespace GardensPoint
+{
+    public sealed partial class Scanner
+    {
+        public override void yyerror(string message, params object[] args)
+        {
+            Compiler.HandleSyntaxError();
+        }
+    }
+}
+
 public class Compiler
 {
     public static int errors = 0;

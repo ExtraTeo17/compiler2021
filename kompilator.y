@@ -8,19 +8,24 @@
 	public List<string> idents;
 }
 
-%token Program OpenBracket CloseBracket Read Write Semicolon Eof Comma Hex Assign LogicalSum LogicalProduct Equals NotEquals GreaterThan GreaterOrEqual LessThan LessOrEqual Plus Minus Multiplies Divides BitwiseSum BitwiseProduct BitwiseNegate LogicalNegate OpenPar ClosePar Return If Else While
+%token Program OpenBracket CloseBracket Read Write Semicolon Comma Hex Assign LogicalSum LogicalProduct Equals NotEquals GreaterThan GreaterOrEqual LessThan LessOrEqual Plus Minus Multiplies Divides BitwiseSum BitwiseProduct BitwiseNegate LogicalNegate OpenPar ClosePar Return If Else While
 %token <val> IntNumber IntHexNum StringVar RealNumber BoolValue Ident Int Double Bool
 
 %type <val> typename
-%type <syntaxTree> instruction read_instruction write_instruction loop_instruction if_else_instruction return_instruction block_instruction exp_instruction unary bitwise factor term relation logical assigner exp ident
+%type <syntaxTree> program instruction read_instruction write_instruction loop_instruction if_else_instruction return_instruction block_instruction exp_instruction unary bitwise factor term relation logical assigner exp ident
 %type <syntaxTreeList> declarations declaration instructions
 %type <idents> identifiers
 
 %%
 
-program				: Program OpenBracket declarations instructions CloseBracket Eof
+program				: Program OpenBracket declarations instructions CloseBracket
 					{
 						Compiler.syntaxTree = new Program($3, $4);
+					}
+					| Program OpenBracket error CloseBracket
+					{
+						Console.WriteLine("err1");
+						yyerrok();
 					}
 					;
 
@@ -43,6 +48,11 @@ declaration			: typename identifiers Semicolon
 							declarations.Add(declaration);
 						}
 						$$ = declarations;
+					}
+					| error Semicolon
+					{
+						Console.WriteLine("err2");
+						yyerrok();
 					}
 					;
 					
@@ -82,6 +92,11 @@ instruction			: write_instruction { }
 					| block_instruction { }
 					| if_else_instruction { }
 					| loop_instruction { }
+					| error Semicolon
+					{
+						Console.WriteLine("err3");
+						yyerrok();
+					}
 					;
 
 read_instruction	: Read ident Semicolon
@@ -119,6 +134,11 @@ return_instruction	: Return Semicolon
 block_instruction	: OpenBracket instructions CloseBracket
 					{
 						$$ = new BlockInstruction($2);
+					}
+					| OpenBracket error CloseBracket
+					{
+						Console.WriteLine("err4");
+						yyerrok();
 					}
 					;
 
