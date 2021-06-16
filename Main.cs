@@ -76,7 +76,7 @@ public class Compiler
         }
         catch (Exception)
         {
-            PrintError("Compilation error"); // TODO: bring back when ready!!
+            PrintError("Compilation error");
         }
 
         if (errors > 0)
@@ -756,7 +756,7 @@ class AssignOperation : BinaryOperation
         }
         else
         {
-            throw new Exception("Unknown type: " + firstExpression.typename);
+            Compiler.HandleSemanticError(line, "cannot assign to undeclared variable");
         }
         return typename;
     }

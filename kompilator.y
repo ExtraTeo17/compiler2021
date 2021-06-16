@@ -51,6 +51,7 @@ declaration			: typename identifiers Semicolon
 					| error Semicolon
 					{
 						yyerrok();
+						$$ = new List<SyntaxTree>();
 					}
 					;
 					
