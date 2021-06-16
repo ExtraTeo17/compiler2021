@@ -76,7 +76,16 @@ public class Compiler
         else
         {
             writer = new StreamWriter(file + ".ll");
-            GenCode();
+            try
+            {
+                GenCode();
+            }
+            catch (Exception)
+            {
+                PrintError("Compilation error");
+                writer.Close();
+                return 3;
+            }
             writer.Close();
             Console.WriteLine("Compilation successful! :)\n");
         }
@@ -270,7 +279,7 @@ public class Declaration : SyntaxTree
 
     public override string CheckType()
     {
-        throw new NotImplementedException();
+        return "";
     }
 
     public override string GenCode()
