@@ -802,22 +802,23 @@ class LogicalSumOperation : BinaryOperation
 
     public override string GenCode() // TODO: nie jestem pewien, czy to są obliczenia skrócone (RACZEJ NIE SĄ), bo jest secondexpr.GenCode() -- upewnij się.
     {
+        string labelStart = Compiler.GetNextLabelName();
+        string labelUnfortunatelyNeedToCalculate = Compiler.GetNextLabelName();
+        string labelHadToDoFullCalc = Compiler.GetNextLabelName();
+        string labelEnd = Compiler.GetNextLabelName();
         string value1 = firstExpression.GenCode();
+        Compiler.EmitCode($"br label %{labelStart}");
+        Compiler.EmitCode($"{labelStart}:");
+        Compiler.EmitCode($"br i1 {value1}, label %{labelEnd}, label %{labelUnfortunatelyNeedToCalculate}");
+        Compiler.EmitCode($"{labelUnfortunatelyNeedToCalculate}:");
         string value2 = secondExpression.GenCode();
-        string curLabel = Compiler.GetCurrentLabelName();
-        string label1 = Compiler.GetNextLabelName();
-        string label2 = Compiler.GetNextLabelName();
-        string reg1 = Compiler.GetNextRegisterName();
-        Compiler.EmitCode($"{reg1} = icmp ne i1 {value1}, 0");
-        Compiler.EmitCode($"br i1 {reg1}, label %{label2}, label %{label1}");
-        Compiler.EmitCode($"{label1}:");
-        string reg2 = Compiler.GetNextRegisterName();
-        Compiler.EmitCode($"{reg2} = icmp ne i1 {value2}, 0");
-        Compiler.EmitCode($"br label %{label2}");
-        Compiler.EmitCode($"{label2}:");
-        string reg3 = Compiler.GetNextRegisterName();
-        Compiler.EmitCode($"{reg3} = phi i1 [ true, %{curLabel} ], [ {reg2}, %{label1} ]");
-        return reg3;
+        Compiler.EmitCode($"br label %{labelHadToDoFullCalc}"); // those "redundant" labels are to make sure phi node predecessors/control paths are covered properly
+        Compiler.EmitCode($"{labelHadToDoFullCalc}:");
+        Compiler.EmitCode($"br label %{labelEnd}");
+        Compiler.EmitCode($"{labelEnd}:");
+        string finalReg = Compiler.GetNextRegisterName();
+        Compiler.EmitCode($"{finalReg} = phi i1 [ true, %{labelStart} ], [ {value2}, %{labelHadToDoFullCalc} ]");
+        return finalReg;
     }
 }
 
@@ -843,22 +844,23 @@ class LogicalProductOperation : BinaryOperation
 
     public override string GenCode()
     {
+        string labelStart = Compiler.GetNextLabelName();
+        string labelUnfortunatelyNeedToCalculate = Compiler.GetNextLabelName();
+        string labelHadToDoFullCalc = Compiler.GetNextLabelName();
+        string labelEnd = Compiler.GetNextLabelName();
         string value1 = firstExpression.GenCode();
+        Compiler.EmitCode($"br label %{labelStart}");
+        Compiler.EmitCode($"{labelStart}:");
+        Compiler.EmitCode($"br i1 {value1}, label %{labelUnfortunatelyNeedToCalculate}, label %{labelEnd}");
+        Compiler.EmitCode($"{labelUnfortunatelyNeedToCalculate}:");
         string value2 = secondExpression.GenCode();
-        string curLabel = Compiler.GetCurrentLabelName();
-        string label1 = Compiler.GetNextLabelName();
-        string label2 = Compiler.GetNextLabelName();
-        string reg1 = Compiler.GetNextRegisterName();
-        Compiler.EmitCode($"{reg1} = icmp ne i1 {value1}, 0");
-        Compiler.EmitCode($"br i1 {reg1}, label %{label1}, label %{label2}");
-        Compiler.EmitCode($"{label1}:");
-        string reg2 = Compiler.GetNextRegisterName();
-        Compiler.EmitCode($"{reg2} = icmp ne i1 {value2}, 0");
-        Compiler.EmitCode($"br label %{label2}");
-        Compiler.EmitCode($"{label2}:");
-        string reg3 = Compiler.GetNextRegisterName();
-        Compiler.EmitCode($"{reg3} = phi i1 [ false, %{curLabel} ], [ {reg2}, %{label1} ]");
-        return reg3;
+        Compiler.EmitCode($"br label %{labelHadToDoFullCalc}"); // those "redundant" labels are to make sure phi node predecessors/control paths are covered properly
+        Compiler.EmitCode($"{labelHadToDoFullCalc}:");
+        Compiler.EmitCode($"br label %{labelEnd}");
+        Compiler.EmitCode($"{labelEnd}:");
+        string finalReg = Compiler.GetNextRegisterName();
+        Compiler.EmitCode($"{finalReg} = phi i1 [ false, %{labelStart} ], [ {value2}, %{labelHadToDoFullCalc} ]");
+        return finalReg;
     }
 }
 
