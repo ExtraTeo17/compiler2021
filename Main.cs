@@ -82,14 +82,14 @@ public class Compiler
         if (errors > 0)
         {
             Console.WriteLine("==========================================");
-            Console.WriteLine($"Compilation failed -- {errors} errors detected :(");
+            Console.WriteLine($"Compilation failed -- {errors} errors detected :(\n");
         }
         else
         {
             writer = new StreamWriter(file + ".ll");
             GenCode();
             writer.Close();
-            Console.WriteLine("Compilation successful! :)");
+            Console.WriteLine("Compilation successful! :)\n");
         }
 
         return errors == 0 ? 0 : 3;
