@@ -162,7 +162,9 @@ public class Compiler
             return "int";
         else if (type == "i1")
             return "bool";
-        return type;
+        else if (type == "double")
+            return "double";
+        return "undeclared variable";
     }
 
     public static int CurrentLine()
@@ -273,7 +275,7 @@ public class Declaration : SyntaxTree
         }
         else
         {
-            throw new Exception($"Declaration of type: {type} not allowed"); // TODO: make sure it can be left if not needed
+            throw new Exception($"Declaration of type: {type} not allowed");
         }
     }
 
@@ -488,6 +490,10 @@ class WriteInstruction : SyntaxTree
     public override string CheckType()
     {
         typename = expression.CheckType();
+        if (typename != "i1" && typename != "i32" && typename != "double")
+        {
+            Compiler.HandleSemanticError(line, "cannot perform write instruction on undeclared variable");
+        }
         return typename;
     }
 
@@ -503,7 +509,7 @@ class WriteInstruction : SyntaxTree
         {
             Compiler.EmitCode($"call i32 (i8*, ...) @printf(i8* bitcast ([4 x i8]* @double_print to i8*), double {value})");
         }
-        else if (typename == "i1") // TODO: fix bool printing, probably a branch condition True/False
+        else if (typename == "i1")
         {
             string reg = Compiler.GetNextRegisterName();
             Compiler.EmitCode($"{reg} = select i1 {value}, i8* bitcast ([5 x i8]* @bool_print_true to i8*), i8* bitcast ([6 x i8]* @bool_print_false to i8*)");
@@ -547,7 +553,7 @@ class UnaryMinusOperation : UnaryOperation
         }
         else
         {
-            Compiler.HandleSemanticError(line, "cannot perform unary minus on type: " + Compiler.DisplayType(expression.typename));
+            Compiler.HandleSemanticError(line, "cannot perform unary minus on: " + Compiler.DisplayType(expression.typename));
         }
         return typename;
     }
@@ -577,7 +583,7 @@ class BitwiseNegateOperation : UnaryOperation
         }
         else
         {
-            Compiler.HandleSemanticError(line, "cannot perform bitwise negate on type: " + Compiler.DisplayType(expression.typename));
+            Compiler.HandleSemanticError(line, "cannot perform bitwise negate on: " + Compiler.DisplayType(expression.typename));
         }
         return typename;
     }
@@ -604,7 +610,7 @@ class LogicalNegateOperation : UnaryOperation
         }
         else
         {
-            Compiler.HandleSemanticError(line, "cannot perform logical negate on type: " + Compiler.DisplayType(expression.typename));
+            Compiler.HandleSemanticError(line, "cannot perform logical negate on: " + Compiler.DisplayType(expression.typename));
         }
         return typename;
     }
@@ -627,6 +633,10 @@ class ConvertToIntOperation : UnaryOperation
     public override string CheckType()
     {
         expression.CheckType();
+        if (expression.typename != "i32" && expression.typename != "i1" && expression.typename != "double")
+        {
+            Compiler.HandleSemanticError(line, "cannot cast undeclared variable to int");
+        }
         typename = "i32";
         return typename;
     }
@@ -674,7 +684,7 @@ class ConvertToDoubleOperation : UnaryOperation
         }
         else
         {
-            throw new Exception("Unknown type: " + expression.typename);
+            Compiler.HandleSemanticError(line, "cannot cast undeclared variable to double");
         }
         return typename;
     }
@@ -794,7 +804,7 @@ class LogicalSumOperation : BinaryOperation
         }
         else
         {
-            Compiler.HandleSemanticError(line, "cannot perform logical sum on types: " + Compiler.DisplayType(firstExpression.typename)
+            Compiler.HandleSemanticError(line, "cannot perform logical sum on: " + Compiler.DisplayType(firstExpression.typename)
                 + ", " + Compiler.DisplayType(secondExpression.typename));
         }
         return typename;
@@ -836,7 +846,7 @@ class LogicalProductOperation : BinaryOperation
         }
         else
         {
-            Compiler.HandleSemanticError(line, "cannot perform logical sum on types: " + Compiler.DisplayType(firstExpression.typename)
+            Compiler.HandleSemanticError(line, "cannot perform logical sum on: " + Compiler.DisplayType(firstExpression.typename)
                 + ", " + Compiler.DisplayType(secondExpression.typename));
         }
         return typename;
@@ -878,7 +888,7 @@ class EqualsOperation : BinaryOperation
             || (firstExpression.typename == "double" && secondExpression.typename == "double")
             || (firstExpression.typename == "i1" && secondExpression.typename == "i1")))
         {
-            Compiler.HandleSemanticError(line, "cannot perform '==' on types: "
+            Compiler.HandleSemanticError(line, "cannot perform '==' on: "
                 + Compiler.DisplayType(firstExpression.typename) + ", " + Compiler.DisplayType(secondExpression.typename));
         }
         typename = "i1";
@@ -935,7 +945,7 @@ class NotEqualsOperation : BinaryOperation
             || (firstExpression.typename == "double" && secondExpression.typename == "double")
             || (firstExpression.typename == "i1" && secondExpression.typename == "i1")))
         {
-            Compiler.HandleSemanticError(line, "cannot perform '!=' on types: "
+            Compiler.HandleSemanticError(line, "cannot perform '!=' on: "
                 + Compiler.DisplayType(firstExpression.typename) + ", " + Compiler.DisplayType(secondExpression.typename));
         }
         typename = "i1";
@@ -991,7 +1001,7 @@ class GreaterThanOperation : BinaryOperation
             || (firstExpression.typename == "i32" && secondExpression.typename == "double")
             || (firstExpression.typename == "double" && secondExpression.typename == "double")))
         {
-            Compiler.HandleSemanticError(line, "cannot perform '>' on types: "
+            Compiler.HandleSemanticError(line, "cannot perform '>' on: "
                 + Compiler.DisplayType(firstExpression.typename) + ", " + Compiler.DisplayType(secondExpression.typename));
         }
         typename = "i1";
@@ -1046,7 +1056,7 @@ class GreaterOrEqualOperation : BinaryOperation
             || (firstExpression.typename == "i32" && secondExpression.typename == "double")
             || (firstExpression.typename == "double" && secondExpression.typename == "double")))
         {
-            Compiler.HandleSemanticError(line, "cannot perform '>=' on types: "
+            Compiler.HandleSemanticError(line, "cannot perform '>=' on: "
                 + Compiler.DisplayType(firstExpression.typename) + ", " + Compiler.DisplayType(secondExpression.typename));
         }
         typename = "i1";
@@ -1101,7 +1111,7 @@ class LessThanOperation : BinaryOperation
             || (firstExpression.typename == "i32" && secondExpression.typename == "double")
             || (firstExpression.typename == "double" && secondExpression.typename == "double")))
         {
-            Compiler.HandleSemanticError(line, "cannot perform '<' on types: "
+            Compiler.HandleSemanticError(line, "cannot perform '<' on: "
                 + Compiler.DisplayType(firstExpression.typename) + ", " + Compiler.DisplayType(secondExpression.typename));
         }
         typename = "i1";
@@ -1156,7 +1166,7 @@ class LessOrEqualOperation : BinaryOperation
             || (firstExpression.typename == "i32" && secondExpression.typename == "double")
             || (firstExpression.typename == "double" && secondExpression.typename == "double")))
         {
-            Compiler.HandleSemanticError(line, "cannot perform '<=' on types: "
+            Compiler.HandleSemanticError(line, "cannot perform '<=' on: "
                 + Compiler.DisplayType(firstExpression.typename) + ", " + Compiler.DisplayType(secondExpression.typename));
         }
         typename = "i1";
@@ -1213,7 +1223,7 @@ class AdditionOperation : BinaryOperation
         else if ((firstExpression.typename != "i32" && firstExpression.typename != "double") ||
             (secondExpression.typename != "i32" && secondExpression.typename != "double"))
         {
-            Compiler.HandleSemanticError(line, "cannot perform addition for types: " + Compiler.DisplayType(firstExpression.typename)
+            Compiler.HandleSemanticError(line, "cannot perform addition for: " + Compiler.DisplayType(firstExpression.typename)
                 + ", " + Compiler.DisplayType(secondExpression.typename));
         }
         else
@@ -1267,7 +1277,7 @@ class SubstractionOperation : BinaryOperation
         else if ((firstExpression.typename != "i32" && firstExpression.typename != "double") ||
             (secondExpression.typename != "i32" && secondExpression.typename != "double"))
         {
-            Compiler.HandleSemanticError(line, "cannot perform substraction for types: " + Compiler.DisplayType(firstExpression.typename)
+            Compiler.HandleSemanticError(line, "cannot perform substraction for: " + Compiler.DisplayType(firstExpression.typename)
                 + ", " + Compiler.DisplayType(secondExpression.typename));
         }
         else
@@ -1321,7 +1331,7 @@ class MultiplicationOperation : BinaryOperation
         else if ((firstExpression.typename != "i32" && firstExpression.typename != "double") ||
             (secondExpression.typename != "i32" && secondExpression.typename != "double"))
         {
-            Compiler.HandleSemanticError(line, "cannot perform multiplication for types: " + Compiler.DisplayType(firstExpression.typename)
+            Compiler.HandleSemanticError(line, "cannot perform multiplication for: " + Compiler.DisplayType(firstExpression.typename)
                 + ", " + Compiler.DisplayType(secondExpression.typename));
         }
         else
@@ -1375,7 +1385,7 @@ class DivisionOperation : BinaryOperation
         else if ((firstExpression.typename != "i32" && firstExpression.typename != "double") ||
             (secondExpression.typename != "i32" && secondExpression.typename != "double"))
         {
-            Compiler.HandleSemanticError(line, "cannot perform division for types: " + Compiler.DisplayType(firstExpression.typename)
+            Compiler.HandleSemanticError(line, "cannot perform division for: " + Compiler.DisplayType(firstExpression.typename)
                 + ", " + Compiler.DisplayType(secondExpression.typename));
         }
         else
@@ -1428,7 +1438,7 @@ class BitwiseSumOperation : BinaryOperation
         }
         else
         {
-            Compiler.HandleSemanticError(line, "cannot perform bitwise sum on types: " + Compiler.DisplayType(firstExpression.typename)
+            Compiler.HandleSemanticError(line, "cannot perform bitwise sum on: " + Compiler.DisplayType(firstExpression.typename)
                 + ", " + Compiler.DisplayType(secondExpression.typename));
         }
         return typename;
@@ -1458,7 +1468,7 @@ class BitwiseProductOperation : BinaryOperation
         }
         else
         {
-            Compiler.HandleSemanticError(line, "cannot perform bitwise product on types: " + Compiler.DisplayType(firstExpression.typename)
+            Compiler.HandleSemanticError(line, "cannot perform bitwise product on: " + Compiler.DisplayType(firstExpression.typename)
                 + ", " + Compiler.DisplayType(secondExpression.typename));
         }
         return typename;
@@ -1531,7 +1541,7 @@ class LoopInstruction : SyntaxTree
     {
         if (condition.CheckType() != "i1")
         {
-            Compiler.HandleSemanticError(condition.line, "condition for 'while' instruction has to be of bool type instead of type: " + (condition.typename == "i32" ? "int" : condition.typename));
+            Compiler.HandleSemanticError(condition.line, "condition for 'while' instruction has to be a bool instead of: " + Compiler.DisplayType(condition.typename));
         }
         instruction.CheckType();
         return null;
@@ -1571,7 +1581,7 @@ class ConditionalInstruction : SyntaxTree
     {
         if (condition.CheckType() != "i1")
         {
-            Compiler.HandleSemanticError(condition.line, "condition for 'if' instruction has to be of bool type instead of type: " + (condition.typename == "i32" ? "int" : condition.typename));
+            Compiler.HandleSemanticError(condition.line, "condition for 'if' instruction has to be a bool instead of: " + Compiler.DisplayType(condition.typename));
         }
         ifInstruction?.CheckType();
         if (elseInstruction != null)
@@ -1617,9 +1627,13 @@ class HexWriteInstruction : SyntaxTree
         {
             typename = expression.typename;
         }
+        else if (expression.typename == "i1" || expression.typename == "double")
+        {
+            Compiler.HandleSemanticError(line, "cannot perform hex write instruction on type: " + Compiler.DisplayType(expression.typename));
+        }
         else
         {
-            Compiler.HandleSemanticError(line, "cannot perform hex write instruction on type: " + (expression.typename == "i1" ? "bool" : expression.typename));
+            Compiler.HandleSemanticError(line, "cannot perform hex write instruction on undeclared variable");
         }
         return typename;
     }
@@ -1649,9 +1663,13 @@ class ReadInstruction : SyntaxTree
         {
             typename = identifier.typename;
         }
+        else if (identifier.typename == "i1")
+        {
+            Compiler.HandleSemanticError(line, "cannot perform read instruction on type: bool");
+        }
         else
         {
-            Compiler.HandleSemanticError(line, "cannot perform read instruction on type: " + (identifier.typename == "i1" ? "bool" : identifier.typename));
+            Compiler.HandleSemanticError(line, "cannot perform read instruction on undeclared variable");
         }
         return typename;
     }
@@ -1694,9 +1712,13 @@ class HexReadInstruction : SyntaxTree
         {
             typename = identifier.typename;
         }
+        else if (identifier.typename == "i1" || identifier.typename == "double")
+        {
+            Compiler.HandleSemanticError(line, "cannot perform hex read instruction on type: " + Compiler.DisplayType(identifier.typename));
+        }
         else
         {
-            Compiler.HandleSemanticError(line, "cannot perform hex read instruction on type: " + (identifier.typename == "i1" ? "bool" : identifier.typename));
+            Compiler.HandleSemanticError(line, "cannot perform hex read instruction on undeclared variable");
         }
         return typename;
     }
