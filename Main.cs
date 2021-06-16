@@ -162,9 +162,9 @@ public class Compiler
             return "int";
         else if (type == "i1")
             return "bool";
-        else if (type == "double")
-            return "double";
-        return "undeclared variable";
+        else if (type == "double" || type == "undeclared variable")
+            return type;
+        return "incalculable expression";
     }
 
     public static int CurrentLine()
@@ -396,9 +396,14 @@ class Identifier : SyntaxTree
     public override string CheckType()
     {
         if (Compiler.symbolTable.ContainsKey(name))
+        {
             typename = Compiler.symbolTable[name].typename;
+        }
         else
+        {
+            typename = "undeclared variable";
             Compiler.HandleSemanticError(line, "undeclared variable: " + name);
+        }
         return typename;
     }
 
@@ -492,7 +497,7 @@ class WriteInstruction : SyntaxTree
         typename = expression.CheckType();
         if (typename != "i1" && typename != "i32" && typename != "double")
         {
-            Compiler.HandleSemanticError(line, "cannot perform write instruction on undeclared variable");
+            Compiler.HandleSemanticError(line, "cannot perform write instruction on: " + Compiler.DisplayType(typename));
         }
         return typename;
     }
@@ -1627,13 +1632,9 @@ class HexWriteInstruction : SyntaxTree
         {
             typename = expression.typename;
         }
-        else if (expression.typename == "i1" || expression.typename == "double")
-        {
-            Compiler.HandleSemanticError(line, "cannot perform hex write instruction on type: " + Compiler.DisplayType(expression.typename));
-        }
         else
         {
-            Compiler.HandleSemanticError(line, "cannot perform hex write instruction on undeclared variable");
+            Compiler.HandleSemanticError(line, "cannot perform hex write instruction on: " + Compiler.DisplayType(expression.typename));
         }
         return typename;
     }
@@ -1663,13 +1664,9 @@ class ReadInstruction : SyntaxTree
         {
             typename = identifier.typename;
         }
-        else if (identifier.typename == "i1")
-        {
-            Compiler.HandleSemanticError(line, "cannot perform read instruction on type: bool");
-        }
         else
         {
-            Compiler.HandleSemanticError(line, "cannot perform read instruction on undeclared variable");
+            Compiler.HandleSemanticError(line, "cannot perform read instruction on: " + Compiler.DisplayType(identifier.typename));
         }
         return typename;
     }
@@ -1712,13 +1709,9 @@ class HexReadInstruction : SyntaxTree
         {
             typename = identifier.typename;
         }
-        else if (identifier.typename == "i1" || identifier.typename == "double")
-        {
-            Compiler.HandleSemanticError(line, "cannot perform hex read instruction on type: " + Compiler.DisplayType(identifier.typename));
-        }
         else
         {
-            Compiler.HandleSemanticError(line, "cannot perform hex read instruction on undeclared variable");
+            Compiler.HandleSemanticError(line, "cannot perform hex read instruction on: " + Compiler.DisplayType(identifier.typename));
         }
         return typename;
     }
