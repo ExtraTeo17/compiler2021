@@ -800,7 +800,7 @@ class LogicalSumOperation : BinaryOperation
         return typename;
     }
 
-    public override string GenCode() // TODO: nie jestem pewien, czy to są obliczenia skrócone (RACZEJ NIE SĄ), bo jest secondexpr.GenCode() -- upewnij się.
+    public override string GenCode()
     {
         string labelStart = Compiler.GetNextLabelName();
         string labelUnfortunatelyNeedToCalculate = Compiler.GetNextLabelName();

@@ -24,7 +24,6 @@ program				: Program OpenBracket declarations instructions CloseBracket
 					}
 					| Program OpenBracket error CloseBracket
 					{
-						Console.WriteLine("err1");
 						yyerrok();
 					}
 					;
@@ -51,7 +50,6 @@ declaration			: typename identifiers Semicolon
 					}
 					| error Semicolon
 					{
-						Console.WriteLine("err2");
 						yyerrok();
 					}
 					;
@@ -94,7 +92,6 @@ instruction			: write_instruction { }
 					| loop_instruction { }
 					| error Semicolon
 					{
-						Console.WriteLine("err3");
 						yyerrok();
 					}
 					;
@@ -137,7 +134,6 @@ block_instruction	: OpenBracket instructions CloseBracket
 					}
 					| OpenBracket error CloseBracket
 					{
-						Console.WriteLine("err4");
 						yyerrok();
 					}
 					;
