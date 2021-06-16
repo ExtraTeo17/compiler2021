@@ -47,7 +47,7 @@ public class Compiler
         else
         {
             Console.WriteLine("Please provide filename for compilation!");
-            return 1; // TODO: make sure it can be left like that
+            return 1;
         }
 
         try
@@ -199,7 +199,7 @@ public class Compiler
         char[] charArray = value.ToCharArray();
         for (int i = 0; i < charArray.Length; ++i)
         {
-            if (charArray[i] == '\\') // TODO: handle the impossible case when backslash as last char
+            if (charArray[i] == '\\')
             {
                 if (charArray[i + 1] == 'n')
                 {
@@ -458,7 +458,7 @@ class RealNumber : SyntaxTree
 
     public override string GenCode()
     {
-        return string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0:0.0###############}", value); // TODO: make sure this invariant culture stuff is correct
+        return string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0:0.0###############}", value);
     }
 }
 
@@ -1463,7 +1463,7 @@ class BitwiseProductOperation : BinaryOperation
 {
     public BitwiseProductOperation(SyntaxTree exp1, SyntaxTree exp2) : base(exp1, exp2) { }
 
-    public override string CheckType() // TODO: only int
+    public override string CheckType()
     {
         firstExpression.CheckType();
         secondExpression.CheckType();
