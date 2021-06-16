@@ -311,11 +311,11 @@ public abstract class SyntaxTree
     }
 }
 
-class Program : SyntaxTree
+class ProgramBlock : SyntaxTree
 {
     private List<SyntaxTree> instructions;
 
-    public Program(List<SyntaxTree> declList, List<SyntaxTree> instrList)
+    public ProgramBlock(List<SyntaxTree> declList, List<SyntaxTree> instrList)
     {
         instructions = instrList;
         Compiler.symbolTable = InitializeSymbolTable(declList);

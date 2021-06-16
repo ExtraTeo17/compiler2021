@@ -20,7 +20,7 @@
 
 program				: Program OpenBracket declarations instructions CloseBracket
 					{
-						Compiler.syntaxTree = new Program($3, $4);
+						Compiler.syntaxTree = new ProgramBlock($3, $4);
 					}
 					| Program OpenBracket error CloseBracket
 					{
