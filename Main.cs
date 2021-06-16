@@ -5,17 +5,6 @@ using GardensPoint;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace GardensPoint
-{
-    public sealed partial class Scanner
-    {
-        public override void yyerror(string message, params object[] args)
-        {
-            Compiler.HandleSyntaxError();
-        }
-    }
-}
-
 public class Compiler
 {
     public static int errors = 0;
@@ -1747,5 +1736,16 @@ class StringWriteInstruction : SyntaxTree
     {
         Compiler.EmitCode($"call i32 (i8*, ...) @printf(i8* bitcast ([{stringInfo.stringLength + 1} x i8]* @{stringInfo.stringVarName} to i8*))");
         return null;
+    }
+}
+
+namespace GardensPoint
+{
+    public sealed partial class Scanner
+    {
+        public override void yyerror(string message, params object[] args)
+        {
+            Compiler.HandleSyntaxError();
+        }
     }
 }
